@@ -1,0 +1,1347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Suneja Tech – Your Dream. Our Code.</title>
+<meta name="description" content="Suneja Tech builds custom websites and mobile apps tailored to your business needs — from concept to deployment on the web, Play Store, and App Store. Affordable, AI-powered digital solutions for schools, retailers, coaches, and businesses of all sizes. Your Dream. Our Code."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,700&family=Outfit:wght@300;400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  :root {
+    --blue: #1E7FE8;
+    --cyan: #009d91;
+    --purple: #7B22D4;
+    --magenta: #c8009e;
+    --bg: #ffffff;
+    --bg2: #f5f7ff;
+    --bg3: #eef1fb;
+    --glass: rgba(255,255,255,0.95);
+    --glass-border: rgba(20,40,120,0.09);
+    --text: #111827;
+    --text-muted: #5b6480;
+    --shadow-sm: 0 2px 12px rgba(30,70,180,0.08);
+    --shadow-md: 0 8px 32px rgba(30,70,180,0.12);
+    --shadow-lg: 0 20px 60px rgba(30,70,180,0.16);
+    --font-head: 'Fraunces', serif;
+    --font-body: 'Outfit', sans-serif;
+    --font-text: 'Barlow', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-text);
+    overflow-x: hidden;
+    line-height: 1.7;
+  }
+
+  /* ──────────────── SCROLLBAR ──────────────── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(var(--blue), var(--purple)); border-radius: 3px; }
+
+  /* ──────────────── CANVAS BG ──────────────── */
+  #canvas-bg {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; pointer-events: none;
+    opacity: 0.18;
+  }
+
+  /* ──────────────── NAV ──────────────── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 5%;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    transition: all 0.3s;
+  }
+  nav.scrolled {
+    padding: 0.65rem 5%;
+    box-shadow: 0 4px 28px rgba(30,70,180,0.1);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 0.7rem; text-decoration: none; }
+  .nav-logo img { height: 40px; }
+  .nav-logo span {
+    font-family: var(--font-head);
+    font-size: 1.05rem; font-weight: 700;
+    background: linear-gradient(90deg, var(--blue), var(--purple), var(--magenta));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: 0.5px;
+  }
+  .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+  .nav-links a {
+    color: var(--text-muted); text-decoration: none;
+    font-family: var(--font-body); font-size: 0.88rem; font-weight: 500;
+    letter-spacing: 0.3px;
+    transition: color 0.3s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px;
+    background: linear-gradient(90deg, var(--blue), var(--cyan));
+    transition: width 0.3s;
+  }
+  .nav-links a:hover { color: var(--blue); }
+  .nav-links a:hover::after { width: 100%; }
+  .nav-cta {
+    background: linear-gradient(135deg, var(--blue), var(--purple)) !important;
+    color: #fff !important; padding: 0.5rem 1.3rem;
+    border-radius: 50px; font-weight: 600 !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
+    box-shadow: 0 4px 18px rgba(30,144,255,0.3);
+  }
+  .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(30,144,255,0.45) !important; color: #fff !important; }
+  .nav-cta::after { display: none !important; }
+  .hamburger { display: none; cursor: pointer; background: none; border: none; color: var(--blue); font-size: 1.4rem; }
+  .mobile-menu {
+    display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(255,255,255,0.98); z-index: 999; flex-direction: column;
+    align-items: center; justify-content: center; gap: 2rem;
+    backdrop-filter: blur(20px);
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a {
+    color: var(--text); font-size: 1.4rem; font-family: var(--font-body);
+    text-decoration: none; font-weight: 600;
+    transition: color 0.2s;
+  }
+  .mobile-menu a:hover { color: var(--blue); }
+  .mobile-close { position: absolute; top: 1.5rem; right: 5%; background: none; border: none; color: var(--blue); font-size: 1.5rem; cursor: pointer; }
+
+  /* ──────────────── SECTIONS COMMON ──────────────── */
+  section { position: relative; z-index: 1; }
+
+  .section-label {
+    font-family: var(--font-body); font-size: 0.72rem; letter-spacing: 3px;
+    color: var(--blue); text-transform: uppercase; margin-bottom: 0.8rem;
+    display: flex; align-items: center; gap: 0.7rem; font-weight: 600;
+  }
+  .section-label::before, .section-label::after {
+    content: ''; flex: 1; height: 1.5px;
+    background: linear-gradient(90deg, transparent, var(--blue));
+    max-width: 36px;
+  }
+  .section-label::after { background: linear-gradient(90deg, var(--blue), transparent); }
+
+  .section-title {
+    font-family: var(--font-head); font-size: clamp(1.9rem, 3.8vw, 2.9rem);
+    font-weight: 700; line-height: 1.15;
+    background: linear-gradient(135deg, var(--text) 40%, var(--blue));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+  }
+  .section-subtitle { color: var(--text-muted); max-width: 560px; font-size: 1.02rem; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; }
+  .pad { padding: 110px 0; }
+
+  /* ──────────────── BTN ──────────────── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.6rem;
+    padding: 0.85rem 2rem; border-radius: 50px;
+    font-family: var(--font-body); font-weight: 600; font-size: 0.92rem;
+    text-decoration: none; cursor: pointer; border: none;
+    transition: all 0.3s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: #fff;
+    box-shadow: 0 4px 22px rgba(30,127,232,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(30,127,232,0.5); }
+  .btn-outline {
+    background: transparent;
+    border: 1.5px solid var(--blue);
+    color: var(--blue);
+  }
+  .btn-outline:hover { background: rgba(30,127,232,0.07); transform: translateY(-2px); }
+
+  /* ──────────────── HERO ──────────────── */
+  #hero {
+    min-height: 100vh; display: flex; align-items: center;
+    padding: 120px 5% 80px;
+    position: relative; overflow: hidden;
+    background: linear-gradient(160deg, #fff 0%, #f0f4ff 60%, #eaf8f7 100%);
+  }
+  .hero-glow {
+    position: absolute; border-radius: 50%; filter: blur(100px);
+    pointer-events: none; z-index: 0;
+  }
+  .glow-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(30,127,232,0.12), transparent 70%);
+    top: -150px; left: -150px;
+    animation: floatGlow 8s ease-in-out infinite;
+  }
+  .glow-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(123,34,212,0.1), transparent 70%);
+    bottom: -80px; right: -80px;
+    animation: floatGlow 10s ease-in-out infinite reverse;
+  }
+  .glow-3 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(0,157,145,0.1), transparent 70%);
+    top: 40%; left: 50%;
+    animation: floatGlow 7s ease-in-out infinite;
+  }
+  @keyframes floatGlow {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    50% { transform: translate(20px,-20px) scale(1.05); }
+  }
+  .hero-inner {
+    position: relative; z-index: 1; display: grid;
+    grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;
+    max-width: 1200px; margin: 0 auto; width: 100%;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: rgba(30,127,232,0.08); border: 1px solid rgba(30,127,232,0.2);
+    border-radius: 50px; padding: 0.35rem 1rem;
+    font-size: 0.82rem; color: var(--blue); letter-spacing: 0.5px;
+    margin-bottom: 1.5rem; font-family: var(--font-body); font-weight: 500;
+    animation: fadeSlideUp 0.8s ease both;
+  }
+  .hero-badge span { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); animation: pulse 2s infinite; }
+  @keyframes pulse {
+    0%,100% { opacity: 1; box-shadow: 0 0 0 0 rgba(30,127,232,0.4); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(30,127,232,0); }
+  }
+  .hero-title {
+    font-family: var(--font-head);
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 900; line-height: 1.1;
+    margin-bottom: 1.5rem;
+    animation: fadeSlideUp 0.9s ease 0.1s both;
+  }
+  .hero-title .line1 { color: var(--text); display: block; }
+  .hero-title .line2 {
+    display: block;
+    background: linear-gradient(90deg, var(--blue), var(--purple), var(--magenta));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-size: 200%;
+    animation: gradShift 4s ease infinite, fadeSlideUp 0.9s ease 0.1s both;
+  }
+  @keyframes gradShift { 0%,100% { background-position: 0%; } 50% { background-position: 100%; } }
+  .hero-desc {
+    color: var(--text-muted); font-size: 1.08rem; max-width: 480px;
+    margin-bottom: 2.5rem;
+    animation: fadeSlideUp 1s ease 0.2s both;
+  }
+  .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; animation: fadeSlideUp 1s ease 0.3s both; }
+  .hero-stats {
+    display: flex; gap: 2.5rem; margin-top: 3rem;
+    animation: fadeSlideUp 1s ease 0.4s both;
+  }
+  .stat-num {
+    font-family: var(--font-head); font-size: 2rem; font-weight: 700;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .stat-label { font-size: 0.8rem; color: var(--text-muted); letter-spacing: 0.3px; font-family: var(--font-body); }
+
+  /* Hero visual */
+  .hero-visual {
+    display: flex; justify-content: center; align-items: center;
+    animation: fadeSlideUp 1s ease 0.2s both;
+  }
+  .hero-orb { position: relative; width: 420px; height: 420px; }
+  .orb-ring {
+    position: absolute; border-radius: 50%; border: 1px solid;
+    animation: spinRing linear infinite;
+  }
+  .orb-ring:nth-child(1) { inset: 0; border-color: rgba(30,127,232,0.2); animation-duration: 20s; }
+  .orb-ring:nth-child(2) { inset: 30px; border-color: rgba(123,34,212,0.15); animation-duration: 15s; animation-direction: reverse; }
+  .orb-ring:nth-child(3) { inset: 60px; border-color: rgba(0,157,145,0.18); animation-duration: 25s; }
+  @keyframes spinRing { to { transform: rotate(360deg); } }
+  .orb-dot {
+    position: absolute; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--blue); top: -4px; left: 50%; transform: translateX(-50%);
+    box-shadow: 0 0 10px rgba(30,127,232,0.6), 0 0 20px rgba(30,127,232,0.3);
+  }
+  .orb-center {
+    position: absolute; inset: 80px; border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(30,127,232,0.12), rgba(123,34,212,0.08), transparent 70%);
+    border: 1px solid rgba(30,127,232,0.15);
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .orb-center img { width: 70%; animation: floatImg 4s ease-in-out infinite; }
+  @keyframes floatImg { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  .orb-nodes { position: absolute; inset: 0; }
+  .node {
+    position: absolute; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--blue); box-shadow: 0 0 8px rgba(30,127,232,0.5);
+    animation: nodePulse 2s ease-in-out infinite;
+  }
+  .node:nth-child(1) { top: 15%; left: 10%; animation-delay: 0s; }
+  .node:nth-child(2) { top: 60%; left: 5%; animation-delay: 0.5s; }
+  .node:nth-child(3) { top: 20%; right: 8%; animation-delay: 1s; background: var(--magenta); box-shadow: 0 0 8px rgba(200,0,158,0.4); }
+  .node:nth-child(4) { bottom: 20%; right: 12%; animation-delay: 1.5s; background: var(--cyan); box-shadow: 0 0 8px rgba(0,157,145,0.4); }
+  @keyframes nodePulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.5);opacity:0.6} }
+
+  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ──────────────── MARQUEE ──────────────── */
+  .marquee-section {
+    padding: 1.4rem 0;
+    border-top: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border);
+    overflow: hidden;
+    background: var(--bg2);
+  }
+  .marquee-track {
+    display: flex; gap: 3rem; width: max-content;
+    animation: marquee 22s linear infinite; align-items: center;
+  }
+  .marquee-track:hover { animation-play-state: paused; }
+  @keyframes marquee { to { transform: translateX(-50%); } }
+  .marquee-item {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-family: var(--font-body); font-size: 0.76rem; letter-spacing: 1.5px;
+    color: var(--text-muted); white-space: nowrap; font-weight: 500;
+    text-transform: uppercase;
+  }
+  .marquee-item i { color: var(--blue); font-size: 0.85rem; }
+
+  /* ──────────────── ABOUT ──────────────── */
+  #about { background: var(--bg); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; align-items: center; }
+  .about-visual { position: relative; }
+  .about-card {
+    background: #fff; border: 1px solid var(--glass-border);
+    border-radius: 24px; padding: 2rem;
+    position: relative; overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+  .about-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--cyan), var(--blue), var(--purple), var(--magenta));
+  }
+  .about-icon-row { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .about-icon {
+    width: 50px; height: 50px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+    transition: transform 0.3s;
+  }
+  .about-icon:hover { transform: scale(1.1); }
+  .about-icon.c { background: rgba(0,157,145,0.1); border: 1px solid rgba(0,157,145,0.2); color: var(--cyan); }
+  .about-icon.b { background: rgba(30,127,232,0.1); border: 1px solid rgba(30,127,232,0.2); color: var(--blue); }
+  .about-icon.m { background: rgba(200,0,158,0.08); border: 1px solid rgba(200,0,158,0.18); color: var(--magenta); }
+  .about-icon.p { background: rgba(123,34,212,0.08); border: 1px solid rgba(123,34,212,0.18); color: var(--purple); }
+  .about-floating {
+    position: absolute; bottom: -20px; right: -20px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 16px; padding: 1rem 1.4rem;
+    box-shadow: 0 8px 24px rgba(30,127,232,0.35);
+    animation: floatImg 5s ease-in-out infinite;
+  }
+  .about-floating .num { font-family: var(--font-head); font-size: 1.8rem; font-weight: 700; color: #fff; }
+  .about-floating .lbl { font-size: 0.78rem; color: rgba(255,255,255,0.8); }
+  .about-text p { color: var(--text-muted); margin-bottom: 1.2rem; font-size: 1rem; }
+  .about-features { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-top: 1.5rem; }
+  .feature-chip { display: flex; align-items: center; gap: 0.6rem; font-size: 0.88rem; color: var(--text-muted); }
+  .feature-chip i { color: var(--cyan); font-size: 0.8rem; }
+
+  /* ──────────────── SERVICES ──────────────── */
+  #services { background: var(--bg2); }
+  .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+  .service-card {
+    background: #fff; border: 1px solid var(--glass-border);
+    border-radius: 20px; padding: 2rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+    position: relative; overflow: hidden; cursor: pointer;
+    box-shadow: var(--shadow-sm);
+  }
+  .service-card::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(135deg, transparent 60%, rgba(30,127,232,0.03));
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .service-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); border-color: rgba(30,127,232,0.2); }
+  .service-card:hover::after { opacity: 1; }
+  .service-icon {
+    width: 60px; height: 60px; border-radius: 16px; margin-bottom: 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; position: relative; z-index: 1;
+  }
+  .service-icon.web { background: linear-gradient(135deg, rgba(30,127,232,0.1), rgba(0,157,145,0.1)); color: var(--blue); }
+  .service-icon.app { background: linear-gradient(135deg, rgba(123,34,212,0.1), rgba(200,0,158,0.1)); color: var(--purple); }
+  .service-icon.deploy { background: linear-gradient(135deg, rgba(30,127,232,0.1), rgba(123,34,212,0.1)); color: var(--blue); }
+  .service-icon.ai { background: linear-gradient(135deg, rgba(0,157,145,0.1), rgba(30,127,232,0.1)); color: var(--cyan); }
+  .service-icon.ecom { background: linear-gradient(135deg, rgba(200,0,158,0.08), rgba(123,34,212,0.1)); color: var(--magenta); }
+  .service-icon.support { background: linear-gradient(135deg, rgba(30,127,232,0.08), rgba(0,157,145,0.1)); color: var(--blue); }
+  .service-card h3 {
+    font-family: var(--font-body); font-size: 1.05rem; font-weight: 700;
+    margin-bottom: 0.7rem; color: var(--text); position: relative; z-index: 1;
+  }
+  .service-card p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.65; position: relative; z-index: 1; }
+  .service-tag {
+    display: inline-block; margin-top: 1.2rem;
+    padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem;
+    background: rgba(30,127,232,0.07); color: var(--blue);
+    border: 1px solid rgba(30,127,232,0.18);
+    position: relative; z-index: 1; font-family: var(--font-body); font-weight: 500;
+  }
+
+  /* ──────────────── PROJECTS ──────────────── */
+  #projects { background: var(--bg); }
+  .projects-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.8rem; margin-top: 3rem; }
+  .project-card {
+    background: #fff; border: 1px solid var(--glass-border);
+    border-radius: 20px; padding: 1.8rem;
+    display: flex; gap: 1.5rem; align-items: flex-start;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: var(--shadow-sm);
+  }
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: rgba(30,127,232,0.2);
+  }
+  .project-logo-wrap {
+    width: 70px; height: 70px; border-radius: 16px;
+    overflow: hidden; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--glass-border);
+  }
+  .project-logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .project-info h3 { font-family: var(--font-body); font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+  .project-type { font-size: 0.74rem; color: var(--blue); letter-spacing: 0.8px; font-family: var(--font-body); font-weight: 600; margin-bottom: 0.7rem; text-transform: uppercase; }
+  .project-info p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1rem; }
+  .project-link {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.82rem; color: var(--blue); text-decoration: none;
+    font-weight: 600; transition: color 0.2s, gap 0.2s; font-family: var(--font-body);
+  }
+  .project-link:hover { color: var(--purple); gap: 0.7rem; }
+
+  /* ──────────────── FOUNDER ──────────────── */
+  #founder {
+    background: linear-gradient(135deg, var(--bg2), var(--bg3));
+    position: relative; overflow: hidden;
+  }
+  #founder::before {
+    content: ''; position: absolute; top: -200px; right: -200px;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(123,34,212,0.05), transparent 60%);
+  }
+  .founder-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 5rem; align-items: center; }
+  .founder-img-wrap { position: relative; }
+  .founder-img-outer {
+    position: relative; border-radius: 24px; overflow: hidden;
+    border: 2px solid rgba(30,127,232,0.15);
+    box-shadow: var(--shadow-lg), 0 0 0 8px rgba(30,127,232,0.04);
+  }
+  .founder-img-outer img { width: 100%; display: block; filter: saturate(1.05); }
+  .founder-badge-img {
+    position: absolute; bottom: -15px; right: -15px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 16px; padding: 1rem 1.3rem;
+    box-shadow: 0 8px 24px rgba(30,127,232,0.4); z-index: 2;
+  }
+  .founder-badge-img .yr { font-family: var(--font-head); font-size: 1.5rem; font-weight: 700; color: #fff; }
+  .founder-badge-img .yl { font-size: 0.75rem; color: rgba(255,255,255,0.8); }
+  .founder-content .section-label { justify-content: flex-start; }
+  .founder-name {
+    font-family: var(--font-head); font-size: clamp(1.6rem, 3vw, 2.4rem);
+    font-weight: 700; color: var(--text); margin-bottom: 0.3rem;
+  }
+  .founder-role {
+    font-size: 0.9rem; color: var(--blue); letter-spacing: 0.5px; margin-bottom: 1.5rem;
+    font-family: var(--font-body); font-weight: 500;
+  }
+  .founder-bio { color: var(--text-muted); font-size: 1rem; line-height: 1.8; margin-bottom: 2rem; }
+  .founder-skills { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .skill-pill {
+    padding: 0.3rem 0.9rem; border-radius: 50px; font-size: 0.8rem;
+    font-family: var(--font-body); font-weight: 500;
+    background: rgba(30,127,232,0.07); border: 1px solid rgba(30,127,232,0.18);
+    color: var(--blue);
+  }
+
+  /* ──────────────── TESTIMONIALS ──────────────── */
+  #testimonials { background: var(--bg2); }
+  .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+  .testi-card {
+    background: #fff; border: 1px solid var(--glass-border);
+    border-radius: 20px; padding: 1.8rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: var(--shadow-sm);
+  }
+  .testi-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .testi-quote { font-size: 2.5rem; line-height: 1; color: var(--blue); opacity: 0.2; font-family: Georgia, serif; margin-bottom: 0.5rem; }
+  .testi-text { color: var(--text-muted); font-size: 0.92rem; line-height: 1.7; margin-bottom: 1.5rem; font-style: italic; }
+  .testi-author { display: flex; align-items: center; gap: 0.9rem; }
+  .testi-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-head); font-size: 1rem; font-weight: 700; color: #fff; flex-shrink: 0;
+  }
+  .testi-name { font-weight: 600; font-size: 0.9rem; color: var(--text); font-family: var(--font-body); }
+  .testi-role { font-size: 0.78rem; color: var(--text-muted); }
+  .testi-stars { color: #f59e0b; font-size: 0.78rem; margin-bottom: 0.3rem; }
+
+  /* ──────────────── BLOG ──────────────── */
+  #blog { background: var(--bg); }
+  .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+  .blog-card {
+    background: #fff; border: 1px solid var(--glass-border);
+    border-radius: 20px; overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;
+    box-shadow: var(--shadow-sm);
+  }
+  .blog-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-md); }
+  .blog-img { height: 180px; overflow: hidden; position: relative; }
+  .blog-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; filter: brightness(0.95) saturate(1.1); }
+  .blog-card:hover .blog-img img { transform: scale(1.06); }
+  .blog-cat {
+    position: absolute; top: 1rem; left: 1rem;
+    padding: 0.2rem 0.7rem; border-radius: 50px;
+    font-size: 0.72rem; font-family: var(--font-body); letter-spacing: 0.8px; font-weight: 600;
+    background: rgba(255,255,255,0.92); color: var(--blue);
+    backdrop-filter: blur(8px); border: 1px solid rgba(30,127,232,0.2);
+  }
+  .blog-body { padding: 1.4rem; }
+  .blog-date { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.6rem; }
+  .blog-body h3 { font-family: var(--font-body); font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 0.6rem; line-height: 1.4; }
+  .blog-body p { font-size: 0.87rem; color: var(--text-muted); line-height: 1.6; }
+  .blog-read {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-size: 0.82rem; color: var(--blue); font-weight: 600;
+    margin-top: 1rem; transition: gap 0.2s; font-family: var(--font-body);
+  }
+  .blog-card:hover .blog-read { gap: 0.7rem; }
+
+  /* ──────────────── CONTACT ──────────────── */
+  #contact { background: var(--bg2); }
+  .contact-grid { display: grid; grid-template-columns: 1fr 1.3fr; gap: 4rem; align-items: start; }
+  .contact-info h3 {
+    font-family: var(--font-head); font-size: 1.4rem; font-weight: 700;
+    color: var(--text); margin-bottom: 1rem; margin-top: 2rem;
+  }
+  .contact-info h3:first-child { margin-top: 0; }
+  .contact-info p { color: var(--text-muted); line-height: 1.7; margin-bottom: 2rem; font-size: 0.95rem; }
+  .contact-item { display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+  .contact-icon {
+    width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+    background: rgba(30,127,232,0.08); border: 1px solid rgba(30,127,232,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: var(--blue);
+  }
+  .contact-detail { font-size: 0.9rem; }
+  .contact-detail a { color: var(--text); text-decoration: none; transition: color 0.2s; font-family: var(--font-body); }
+  .contact-detail a:hover { color: var(--blue); }
+  .contact-label { font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-body); }
+
+  /* Form */
+  .contact-form-card {
+    background: #fff; border: 1px solid var(--glass-border);
+    border-radius: 24px; padding: 2.5rem;
+    box-shadow: var(--shadow-md);
+    position: relative; overflow: hidden;
+  }
+  .contact-form-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--cyan), var(--blue), var(--purple), var(--magenta));
+  }
+  .form-title { font-family: var(--font-body); font-size: 1.3rem; font-weight: 700; color: var(--text); margin-bottom: 0.4rem; }
+  .form-sub { font-size: 0.88rem; color: var(--text-muted); margin-bottom: 2rem; }
+  .form-group { margin-bottom: 1.3rem; }
+  .form-group label { display: block; font-size: 0.83rem; color: var(--text-muted); margin-bottom: 0.45rem; font-weight: 500; font-family: var(--font-body); }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%; background: var(--bg2);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px; padding: 0.85rem 1rem;
+    color: var(--text); font-family: var(--font-text); font-size: 0.9rem;
+    outline: none; transition: border-color 0.3s, box-shadow 0.3s; resize: none;
+  }
+  .form-group input::placeholder,
+  .form-group textarea::placeholder { color: #aab0c4; }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(30,127,232,0.1);
+    background: #fff;
+  }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .btn-wa {
+    width: 100%; justify-content: center;
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: #fff; box-shadow: 0 4px 20px rgba(37,211,102,0.28);
+    font-size: 1rem; padding: 1rem;
+  }
+  .btn-wa:hover { box-shadow: 0 8px 30px rgba(37,211,102,0.4); transform: translateY(-2px); }
+
+  /* ──────────────── FOOTER ──────────────── */
+  footer {
+    background: #0f1628;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 3rem 5% 2rem;
+    position: relative; z-index: 1;
+  }
+  .footer-inner {
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem;
+    margin-bottom: 3rem;
+  }
+  .footer-brand p { color: rgba(255,255,255,0.5); font-size: 0.88rem; line-height: 1.7; margin: 1rem 0; max-width: 280px; }
+  .footer-socials { display: flex; gap: 0.7rem; }
+  .social-btn {
+    width: 38px; height: 38px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.5); font-size: 0.9rem; text-decoration: none;
+    transition: all 0.3s;
+  }
+  .social-btn:hover { border-color: var(--blue); color: var(--blue); transform: translateY(-2px); background: rgba(30,127,232,0.1); }
+  .footer-col h4 {
+    font-family: var(--font-body); font-size: 0.9rem; font-weight: 700;
+    color: rgba(255,255,255,0.85); margin-bottom: 1.2rem;
+  }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { margin-bottom: 0.6rem; }
+  .footer-col ul li a {
+    color: rgba(255,255,255,0.45); text-decoration: none;
+    font-size: 0.87rem; transition: color 0.2s; font-family: var(--font-body);
+  }
+  .footer-col ul li a:hover { color: rgba(255,255,255,0.85); }
+  .footer-logo-text {
+    font-family: var(--font-head); font-size: 1rem; font-weight: 700;
+    background: linear-gradient(90deg, var(--cyan), var(--blue), var(--magenta));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: 0.5px; display: flex; align-items: center; padding-left: 0.7rem;
+  }
+  .footer-bottom {
+    max-width: 1200px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid rgba(255,255,255,0.07); padding-top: 1.5rem;
+  }
+  .footer-bottom p { font-size: 0.82rem; color: rgba(255,255,255,0.35); }
+  .footer-bottom span { color: var(--magenta); }
+
+  /* ──────────────── SCROLL REVEAL ──────────────── */
+  .reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(0.16,1,0.3,1); }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+  .reveal-delay-4 { transition-delay: 0.4s; }
+
+  /* ──────────────── GLOW DIVIDER ──────────────── */
+  .glow-divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--blue), var(--cyan), var(--purple), transparent);
+    opacity: 0.2;
+  }
+
+  /* ──────────────── BACK TO TOP ──────────────── */
+  #back-top {
+    position: fixed; bottom: 2rem; right: 2rem;
+    width: 46px; height: 46px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: #fff; border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; z-index: 999; opacity: 0; transform: translateY(20px);
+    transition: all 0.3s; box-shadow: 0 4px 20px rgba(30,127,232,0.4);
+  }
+  #back-top.show { opacity: 1; transform: translateY(0); }
+  #back-top:hover { transform: translateY(-3px); }
+
+  /* Progress bar */
+  #progress-bar {
+    position: fixed; top: 0; left: 0; height: 3px; z-index: 9999;
+    background: linear-gradient(90deg, var(--cyan), var(--blue), var(--magenta));
+    transition: width 0.1s;
+  }
+
+  /* ──────────────── RESPONSIVE ──────────────── */
+  @media (max-width: 900px) {
+    .nav-links { display: none; }
+    .hamburger { display: block; }
+    .hero-inner { grid-template-columns: 1fr; text-align: center; }
+    .hero-ctas { justify-content: center; }
+    .hero-stats { justify-content: center; }
+    .hero-visual { display: none; }
+    .about-grid, .founder-grid, .contact-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .services-grid { grid-template-columns: repeat(2, 1fr); }
+    .projects-grid { grid-template-columns: 1fr; }
+    .testi-grid { grid-template-columns: 1fr; }
+    .blog-grid { grid-template-columns: 1fr; }
+    .footer-inner { grid-template-columns: 1fr 1fr; }
+    .founder-img-wrap { max-width: 300px; margin: 0 auto; }
+    .form-row { grid-template-columns: 1fr; }
+    .hero-orb { width: 300px; height: 300px; }
+  }
+  @media (max-width: 600px) {
+    .services-grid { grid-template-columns: 1fr; }
+    .footer-inner { grid-template-columns: 1fr; }
+    .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
+    .hero-stats { flex-wrap: wrap; gap: 1.5rem; }
+    .pad { padding: 80px 0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<canvas id="canvas-bg"></canvas>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <img src="https://sourabhsuneja.github.io/redirect/logo-new.png" alt="Suneja Tech Logo"/>
+    <span>SUNEJA TECH</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#founder">Founder</a></li>
+    <li><a href="#blog">Blog</a></li>
+    <li><a href="#contact" class="nav-cta">Get a Quote</a></li>
+  </ul>
+  <button class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="toggleMenu()"><i class="fas fa-times"></i></button>
+  <a href="#about" onclick="toggleMenu()">About</a>
+  <a href="#services" onclick="toggleMenu()">Services</a>
+  <a href="#projects" onclick="toggleMenu()">Projects</a>
+  <a href="#founder" onclick="toggleMenu()">Founder</a>
+  <a href="#blog" onclick="toggleMenu()">Blog</a>
+  <a href="#contact" onclick="toggleMenu()">Get a Quote</a>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-glow glow-1"></div>
+  <div class="hero-glow glow-2"></div>
+  <div class="hero-glow glow-3"></div>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge">
+        <span></span> Est. 2020 · Turning Ideas into Digital Realities
+      </div>
+      <h1 class="hero-title">
+        <span class="line1">Your Dream.</span>
+        <span class="line2">Our Code.</span>
+      </h1>
+      <p class="hero-desc">We build stunning websites and powerful mobile apps, fully customised to your business needs. From concept to clicks to customers — we've got you covered.</p>
+      <div class="hero-ctas">
+        <a href="#contact" class="btn btn-primary"><i class="fas fa-rocket"></i> Start Your Project</a>
+        <a href="#projects" class="btn btn-outline"><i class="fas fa-eye"></i> View Our Work</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <div class="stat-num">50+</div>
+          <div class="stat-label">Projects Delivered</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">5★</div>
+          <div class="stat-label">Client Rating</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num">5+</div>
+          <div class="stat-label">Years of Excellence</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-orb">
+        <div class="orb-ring"><div class="orb-dot"></div></div>
+        <div class="orb-ring"><div class="orb-dot"></div></div>
+        <div class="orb-ring"><div class="orb-dot"></div></div>
+        <div class="orb-nodes">
+          <div class="node"></div>
+          <div class="node"></div>
+          <div class="node"></div>
+          <div class="node"></div>
+        </div>
+        <div class="orb-center">
+          <img src="https://sourabhsuneja.github.io/redirect/logo-new.png" alt="Suneja Tech"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <div class="marquee-item"><i class="fas fa-globe"></i> Web Development</div>
+    <div class="marquee-item"><i class="fab fa-android"></i> Android Apps</div>
+    <div class="marquee-item"><i class="fab fa-apple"></i> iOS Apps</div>
+    <div class="marquee-item"><i class="fas fa-cloud-upload-alt"></i> Deployment</div>
+    <div class="marquee-item"><i class="fas fa-shopping-cart"></i> E-Commerce</div>
+    <div class="marquee-item"><i class="fas fa-robot"></i> AI Features</div>
+    <div class="marquee-item"><i class="fas fa-palette"></i> UI/UX Design</div>
+    <div class="marquee-item"><i class="fas fa-headset"></i> 24/7 Support</div>
+    <div class="marquee-item"><i class="fas fa-globe"></i> Web Development</div>
+    <div class="marquee-item"><i class="fab fa-android"></i> Android Apps</div>
+    <div class="marquee-item"><i class="fab fa-apple"></i> iOS Apps</div>
+    <div class="marquee-item"><i class="fas fa-cloud-upload-alt"></i> Deployment</div>
+    <div class="marquee-item"><i class="fas fa-shopping-cart"></i> E-Commerce</div>
+    <div class="marquee-item"><i class="fas fa-robot"></i> AI Features</div>
+    <div class="marquee-item"><i class="fas fa-palette"></i> UI/UX Design</div>
+    <div class="marquee-item"><i class="fas fa-headset"></i> 24/7 Support</div>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about" class="pad">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-visual reveal">
+        <div class="about-card">
+          <div class="about-icon-row">
+            <div class="about-icon c"><i class="fas fa-code"></i></div>
+            <div class="about-icon b"><i class="fas fa-mobile-alt"></i></div>
+            <div class="about-icon m"><i class="fas fa-paint-brush"></i></div>
+            <div class="about-icon p"><i class="fas fa-database"></i></div>
+          </div>
+          <h3 style="font-family:var(--font-body);font-size:1.3rem;font-weight:700;color:var(--text);margin-bottom:0.8rem;">We Don't Just Build Apps.<br/>We Build Experiences.</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;line-height:1.7;">Whether you're a kirana store, a coaching centre, a hair stylist, or a growing startup — we craft solutions that fit your exact needs and budget.</p>
+          <div style="height:1px;background:var(--glass-border);margin:1.5rem 0;"></div>
+          <div style="display:flex;gap:1.5rem;">
+            <div>
+              <div style="font-family:var(--font-head);font-size:1.4rem;font-weight:700;color:var(--cyan);">100%</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);font-family:var(--font-body);">Custom Built</div>
+            </div>
+            <div>
+              <div style="font-family:var(--font-head);font-size:1.4rem;font-weight:700;color:var(--blue);">∞</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);font-family:var(--font-body);">Possibilities</div>
+            </div>
+            <div>
+              <div style="font-family:var(--font-head);font-size:1.4rem;font-weight:700;color:var(--magenta);">24/7</div>
+              <div style="font-size:0.78rem;color:var(--text-muted);font-family:var(--font-body);">Support</div>
+            </div>
+          </div>
+          <div class="about-floating">
+            <div class="num">5+</div>
+            <div class="lbl">Years Building</div>
+          </div>
+        </div>
+      </div>
+      <div class="about-text reveal reveal-delay-2">
+        <div class="section-label">About Us</div>
+        <h2 class="section-title">Turn Your Idea Into an Experience People Remember</h2>
+        <p>We take you all the way from a raw idea to a live, fully-functional product on the web, Play Store, or App Store. No handoffs. No confusion. Just results.</p>
+        <p>We love solving everyday problems for all kinds of businesses — schools, coaching centres, retailers, counsellors, and more — through creative and affordable digital solutions.</p>
+        <div class="about-features">
+          <div class="feature-chip"><i class="fas fa-check-circle"></i> Fully Customised Solutions</div>
+          <div class="feature-chip"><i class="fas fa-check-circle"></i> End-to-End Delivery</div>
+          <div class="feature-chip"><i class="fas fa-check-circle"></i> Play Store & App Store</div>
+          <div class="feature-chip"><i class="fas fa-check-circle"></i> Affordable for Every Business</div>
+          <div class="feature-chip"><i class="fas fa-check-circle"></i> AI-Powered Features</div>
+          <div class="feature-chip"><i class="fas fa-check-circle"></i> Modern, Responsive Design</div>
+        </div>
+        <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+          <a href="#contact" class="btn btn-primary"><i class="fas fa-comments"></i> Let's Talk</a>
+          <a href="#services" class="btn btn-outline"><i class="fas fa-list"></i> Our Services</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- SERVICES -->
+<section id="services" class="pad">
+  <div class="container">
+    <div style="text-align:center;max-width:600px;margin:0 auto;" class="reveal">
+      <div class="section-label" style="justify-content:center;">What We Do</div>
+      <h2 class="section-title" style="margin:0 auto;">Services Crafted for Every Business</h2>
+      <p class="section-subtitle" style="margin:0 auto 0;">From building your first website to deploying your app on global stores — we handle it all.</p>
+    </div>
+    <div class="services-grid">
+      <div class="service-card reveal reveal-delay-1">
+        <div class="service-icon web"><i class="fas fa-globe"></i></div>
+        <h3>Custom Website Development</h3>
+        <p>Stunning, responsive websites built from scratch — tailored to your business identity, your goals, and your customers. No templates.</p>
+        <span class="service-tag">Web</span>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <div class="service-icon app"><i class="fab fa-android"></i></div>
+        <h3>Android & iOS App Development</h3>
+        <p>Powerful mobile apps that solve real problems. From attendance trackers to PoS machines — we build what your business truly needs.</p>
+        <span class="service-tag">Mobile</span>
+      </div>
+      <div class="service-card reveal reveal-delay-3">
+        <div class="service-icon deploy"><i class="fas fa-cloud-upload-alt"></i></div>
+        <h3>Deployment & Publishing</h3>
+        <p>We take your product live — on the web, Google Play Store, or Apple App Store. Domain, hosting, certificates — we handle everything.</p>
+        <span class="service-tag">DevOps</span>
+      </div>
+      <div class="service-card reveal reveal-delay-1">
+        <div class="service-icon ai"><i class="fas fa-robot"></i></div>
+        <h3>AI-Powered Features</h3>
+        <p>Supercharge your app with smart AI integrations — chatbots, auto-generation, personalised recommendations and more.</p>
+        <span class="service-tag">AI / ML</span>
+      </div>
+      <div class="service-card reveal reveal-delay-2">
+        <div class="service-icon ecom"><i class="fas fa-shopping-bag"></i></div>
+        <h3>E-Commerce & Billing Solutions</h3>
+        <p>Turn your phone into a PoS machine. Barcode generation, inventory tracking, credit management, and sales analytics — affordable for every retailer.</p>
+        <span class="service-tag">E-Commerce</span>
+      </div>
+      <div class="service-card reveal reveal-delay-3">
+        <div class="service-icon support"><i class="fas fa-headset"></i></div>
+        <h3>Maintenance & Support</h3>
+        <p>Your product doesn't stop after launch. We provide ongoing updates, feature additions, bug fixes, and 24/7 technical support.</p>
+        <span class="service-tag">Support</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- PROJECTS -->
+<section id="projects" class="pad">
+  <div class="container">
+    <div style="text-align:center;max-width:600px;margin:0 auto 3rem;" class="reveal">
+      <div class="section-label" style="justify-content:center;">Our Portfolio</div>
+      <h2 class="section-title" style="margin:0 auto;">Real Products. Real Impact.</h2>
+      <p class="section-subtitle" style="margin:0 auto;">A selection of projects we've built with love, code, and purpose.</p>
+    </div>
+    <div class="projects-grid">
+      <div class="project-card reveal reveal-delay-1">
+        <div class="project-logo-wrap" style="background:#fff;">
+          <img src="https://swadarpan.com/swadarpan-logo.png" alt="Swadarpan Logo"/>
+        </div>
+        <div class="project-info">
+          <div class="project-type">Website · Wellness & Healing</div>
+          <h3>Swadarpan</h3>
+          <p>A polished digital presence for a brand offering yoga, reiki healing, and counselling services. Designed to inspire trust and attract clients.</p>
+          <a href="https://swadarpan.com" target="_blank" class="project-link">Visit Website <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      <div class="project-card reveal reveal-delay-2">
+        <div class="project-logo-wrap" style="background:#fff;">
+          <img src="https://sourabhsuneja.github.io/jvp-spark/android-chrome-512x512.png" alt="JVP Spark Logo"/>
+        </div>
+        <div class="project-info">
+          <div class="project-type">Android App · Education</div>
+          <h3>JVP Spark App</h3>
+          <p>A school app letting students access results, quizzes, worksheets, an AI chatbot, and gamified self-assessment tools — all in one place.</p>
+          <a href="https://play.google.com/store/apps/details?id=io.github.sourabhsuneja.twa" target="_blank" class="project-link">View on Play Store <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      <div class="project-card reveal reveal-delay-3">
+        <div class="project-logo-wrap" style="background:#23284B;">
+          <img src="https://sourabhsuneja.github.io/redirect/jvp-teachers-logo.png" alt="JVP Teachers Logo"/>
+        </div>
+        <div class="project-info">
+          <div class="project-type">Android App · EdTech</div>
+          <h3>JVP Teachers App</h3>
+          <p>An AI-assisted teacher companion for attendance, mark entry, lesson plan generation, syllabus tracking and daily academic task management.</p>
+          <a href="https://play.google.com/store/apps/details?id=com.jvp.teachers" target="_blank" class="project-link">View on Play Store <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+      <div class="project-card reveal reveal-delay-4">
+        <div class="project-logo-wrap" style="background:#232FD8;">
+          <img src="https://sourabhsuneja.github.io/ScanNBill/logo.png" alt="ScanNBill Logo"/>
+        </div>
+        <div class="project-info">
+          <div class="project-type">Android App · Retail & Commerce</div>
+          <h3>ScanNBill</h3>
+          <p>Turns any Android phone into a free PoS machine. Generates barcodes, tracks inventory, manages credit, and logs sales — ideal for kirana stores.</p>
+          <a href="https://play.google.com/store/apps/details?id=com.scannbill.app" target="_blank" class="project-link">View on Play Store <i class="fas fa-arrow-right"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- FOUNDER -->
+<section id="founder" class="pad">
+  <div class="container">
+    <div class="founder-grid">
+      <div class="founder-img-wrap reveal">
+        <div class="founder-img-outer">
+          <img src="https://sourabhsuneja.github.io/jvp-spark/images/sourabh_suneja.jpg" alt="Sourabh Suneja"/>
+        </div>
+        <div class="founder-badge-img">
+          <div class="yr">2020</div>
+          <div class="yl">Founded</div>
+        </div>
+      </div>
+      <div class="founder-content reveal reveal-delay-2">
+        <div class="section-label">Meet the Visionary</div>
+        <h2 class="founder-name">Sourabh Suneja</h2>
+        <div class="founder-role">Founder & CEO · Computer Teacher · Software Developer</div>
+        <p class="founder-bio">
+          Suneja Tech was born from a vision brought to life by a passionate computer teacher and software developer, Mr. Sourabh Suneja, in 2020. As a lifelong technology enthusiast, Sourabh was always driven to solve real-world problems through creative digital solutions.
+          <br/><br/>
+          With an intuitive problem-solving mind and a divine gift for building elegant software, he created a brand known for tackling everyday challenges through novel, affordable, and high-quality technical solutions. His unique blend of teaching experience and development expertise gives Suneja Tech its human-first, results-driven edge.
+        </p>
+        <div class="founder-skills">
+          <span class="skill-pill">Software Development</span>
+          <span class="skill-pill">Computer Science Education</span>
+          <span class="skill-pill">Android Development</span>
+          <span class="skill-pill">Web Technologies</span>
+          <span class="skill-pill">AI Integration</span>
+          <span class="skill-pill">Problem Solving</span>
+          <span class="skill-pill">UI/UX Design</span>
+          <span class="skill-pill">Product Strategy</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" class="pad">
+  <div class="container">
+    <div style="text-align:center;max-width:600px;margin:0 auto 3rem;" class="reveal">
+      <div class="section-label" style="justify-content:center;">Testimonials</div>
+      <h2 class="section-title" style="margin:0 auto;">What Our Clients Say</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card reveal reveal-delay-1">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"</div>
+        <p class="testi-text">Suneja Tech transformed our school's digital experience. The JVP Spark app is used by hundreds of students daily. The AI chatbot and quiz features are simply outstanding. Highly recommend their work!</p>
+        <div class="testi-author">
+          <div class="testi-avatar">P</div>
+          <div>
+            <div class="testi-name">Principal Mehta</div>
+            <div class="testi-role">School Principal, JVP Academy</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-delay-2">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"</div>
+        <p class="testi-text">As a small retailer, I was struggling to manage my inventory and billing. ScanNBill turned my phone into a full PoS system at zero cost! I don't know how I managed without it before.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,var(--cyan),var(--blue));">R</div>
+          <div>
+            <div class="testi-name">Rajesh Verma</div>
+            <div class="testi-role">Owner, Verma Kirana Store</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal reveal-delay-3">
+        <div class="testi-stars">★★★★★</div>
+        <div class="testi-quote">"</div>
+        <p class="testi-text">Sourabh built the Swadarpan website with such care and creativity. Clients consistently tell me the website is what made them reach out first. The whole process was smooth and very professional.</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,var(--magenta),var(--purple));">A</div>
+          <div>
+            <div class="testi-name">Anita Sharma</div>
+            <div class="testi-role">Founder, Swadarpan Wellness</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- BLOG -->
+<section id="blog" class="pad">
+  <div class="container">
+    <div style="text-align:center;max-width:600px;margin:0 auto 3rem;" class="reveal">
+      <div class="section-label" style="justify-content:center;">Insights</div>
+      <h2 class="section-title" style="margin:0 auto;">From Our Blog</h2>
+      <p class="section-subtitle" style="margin:0 auto;">Thought leadership on digital presence, business growth, and the power of technology.</p>
+    </div>
+    <div class="blog-grid">
+      <div class="blog-card reveal reveal-delay-1">
+        <div class="blog-img">
+          <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&q=80" alt="Digital Presence"/>
+          <div class="blog-cat">Digital Strategy</div>
+        </div>
+        <div class="blog-body">
+          <div class="blog-date">March 12, 2025</div>
+          <h3>Why Every Business Needs a Digital Presence in 2025</h3>
+          <p>In a world where customers search before they shop, not having a digital presence means being invisible. Here's why getting online is no longer optional.</p>
+          <div class="blog-read">Read Article <i class="fas fa-arrow-right"></i></div>
+        </div>
+      </div>
+      <div class="blog-card reveal reveal-delay-2">
+        <div class="blog-img">
+          <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80" alt="Website Customers"/>
+          <div class="blog-cat">Growth</div>
+        </div>
+        <div class="blog-body">
+          <div class="blog-date">February 4, 2025</div>
+          <h3>How a Professional Website Turns Visitors into Paying Customers</h3>
+          <p>A beautiful website isn't just a digital brochure — it's your best salesperson. Learn how great design and smart UX drive real business results.</p>
+          <div class="blog-read">Read Article <i class="fas fa-arrow-right"></i></div>
+        </div>
+      </div>
+      <div class="blog-card reveal reveal-delay-3">
+        <div class="blog-img">
+          <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=600&q=80" alt="Mobile Apps"/>
+          <div class="blog-cat">Mobile Technology</div>
+        </div>
+        <div class="blog-body">
+          <div class="blog-date">January 18, 2025</div>
+          <h3>How Mobile Apps Are Solving Everyday Problems for Real People</h3>
+          <p>From tracking school results to managing a kirana store — mobile apps are quietly revolutionising how ordinary businesses and individuals operate.</p>
+          <div class="blog-read">Read Article <i class="fas fa-arrow-right"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="glow-divider"></div>
+
+<!-- CONTACT -->
+<section id="contact" class="pad">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="reveal">
+        <div class="section-label">Contact Us</div>
+        <h2 class="section-title">Let's Build Something Brilliant Together</h2>
+        <p style="color:var(--text-muted);margin-bottom:2rem;font-size:1rem;line-height:1.8;">Have a project in mind? Tell us about it. We build for businesses of all sizes — big dreams welcome, tight budgets respected.</p>
+        <div class="contact-item">
+          <div class="contact-icon"><i class="fas fa-phone"></i></div>
+          <div class="contact-detail">
+            <div class="contact-label">Phone / WhatsApp</div>
+            <a href="tel:+918619153370">+91 86191 53370</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+          <div class="contact-detail">
+            <div class="contact-label">Email</div>
+            <a href="mailto:sourabhsuneja021@gmail.com">sourabhsuneja021@gmail.com</a>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon"><i class="fab fa-whatsapp"></i></div>
+          <div class="contact-detail">
+            <div class="contact-label">Quick Chat</div>
+            <a href="https://wa.me/917742693933" target="_blank">Chat on WhatsApp →</a>
+          </div>
+        </div>
+        <div style="margin-top:2rem;background:#fff;border:1px solid var(--glass-border);border-radius:16px;padding:1.5rem;box-shadow:var(--shadow-sm);">
+          <div style="font-family:var(--font-body);font-weight:700;color:var(--text);margin-bottom:0.5rem;font-size:1rem;">Happy Clients Include</div>
+          <div style="display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.8rem;">
+            <span style="padding:0.25rem 0.8rem;border-radius:50px;font-size:0.78rem;background:rgba(0,157,145,0.07);border:1px solid rgba(0,157,145,0.2);color:var(--cyan);font-family:var(--font-body);">Schools</span>
+            <span style="padding:0.25rem 0.8rem;border-radius:50px;font-size:0.78rem;background:rgba(30,127,232,0.07);border:1px solid rgba(30,127,232,0.18);color:var(--blue);font-family:var(--font-body);">Coaching Centres</span>
+            <span style="padding:0.25rem 0.8rem;border-radius:50px;font-size:0.78rem;background:rgba(123,34,212,0.07);border:1px solid rgba(123,34,212,0.18);color:var(--purple);font-family:var(--font-body);">Retailers</span>
+            <span style="padding:0.25rem 0.8rem;border-radius:50px;font-size:0.78rem;background:rgba(200,0,158,0.07);border:1px solid rgba(200,0,158,0.18);color:var(--magenta);font-family:var(--font-body);">Counsellors</span>
+            <span style="padding:0.25rem 0.8rem;border-radius:50px;font-size:0.78rem;background:rgba(0,157,145,0.07);border:1px solid rgba(0,157,145,0.2);color:var(--cyan);font-family:var(--font-body);">Wellness Brands</span>
+            <span style="padding:0.25rem 0.8rem;border-radius:50px;font-size:0.78rem;background:rgba(30,127,232,0.07);border:1px solid rgba(30,127,232,0.18);color:var(--blue);font-family:var(--font-body);">Diverse Businesses</span>
+          </div>
+        </div>
+      </div>
+      <div class="contact-form-card reveal reveal-delay-2">
+        <div class="form-title">Send Us a Query</div>
+        <div class="form-sub">Tell us what you need — we'll reply within 24 hours.</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="f-name">Your Name *</label>
+            <input type="text" id="f-name" placeholder="e.g. Rahul Sharma"/>
+          </div>
+          <div class="form-group">
+            <label for="f-biz">Business Type *</label>
+            <select id="f-biz">
+              <option value="">Select type…</option>
+              <option>School / College</option>
+              <option>Coaching Centre</option>
+              <option>Retail / Kirana Store</option>
+              <option>Wellness / Healthcare</option>
+              <option>Salon / Beauty</option>
+              <option>Restaurant / Food</option>
+              <option>E-Commerce</option>
+              <option>NGO / Non-Profit</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="f-service">What do you need?</label>
+          <select id="f-service">
+            <option value="">Select service…</option>
+            <option>Website Development</option>
+            <option>Android App</option>
+            <option>iOS App</option>
+            <option>Both Website + App</option>
+            <option>E-Commerce / Billing Solution</option>
+            <option>AI-Powered Features</option>
+            <option>Maintenance & Support</option>
+            <option>Not sure yet</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="f-message">Describe what you want *</label>
+          <textarea id="f-message" rows="4" placeholder="Tell us about your project idea, features you need, your target audience, budget range, timeline etc…"></textarea>
+        </div>
+        <button class="btn btn-wa" onclick="sendToWhatsApp()">
+          <i class="fab fa-whatsapp" style="font-size:1.2rem;"></i> Send on WhatsApp
+        </button>
+        <p style="text-align:center;font-size:0.78rem;color:var(--text-muted);margin-top:0.8rem;">Opens WhatsApp with your query pre-filled. We'll respond within 24 hours.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="#" style="display:inline-flex;align-items:center;margin-bottom:0.5rem;text-decoration:none;">
+        <img src="https://sourabhsuneja.github.io/redirect/logo-new.png" alt="Suneja Tech" style="height:38px;"/>
+        <span class="footer-logo-text">SUNEJA TECH</span>
+      </a>
+      <p>Your Dream. Our Code. Building digital experiences that matter — from concepts to customers, for businesses of all kinds.</p>
+      <div class="footer-socials">
+        <a href="https://wa.me/917742693933" class="social-btn" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        <a href="mailto:sourabhsuneja021@gmail.com" class="social-btn"><i class="fas fa-envelope"></i></a>
+        <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Services</h4>
+      <ul>
+        <li><a href="#services">Web Development</a></li>
+        <li><a href="#services">Android Apps</a></li>
+        <li><a href="#services">iOS Apps</a></li>
+        <li><a href="#services">Deployment</a></li>
+        <li><a href="#services">AI Features</a></li>
+        <li><a href="#services">Support</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#founder">Our Founder</a></li>
+        <li><a href="#projects">Portfolio</a></li>
+        <li><a href="#testimonials">Testimonials</a></li>
+        <li><a href="#blog">Blog</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Get In Touch</h4>
+      <ul>
+        <li><a href="tel:+918619153370">+91 86191 53370</a></li>
+        <li><a href="mailto:sourabhsuneja021@gmail.com">Email Us</a></li>
+        <li><a href="https://wa.me/917742693933" target="_blank">WhatsApp</a></li>
+        <li><a href="#contact">Send a Query</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Suneja Tech. Built with <span>♥</span> by Sourabh Suneja.</p>
+    <p style="font-size:0.78rem;color:rgba(255,255,255,0.3);">Your Dream. Our Code.</p>
+  </div>
+</footer>
+
+<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-chevron-up"></i></button>
+
+<script>
+// ── CANVAS CIRCUIT BACKGROUND (light theme) ──
+const canvas = document.getElementById('canvas-bg');
+const ctx = canvas.getContext('2d');
+let W, H, nodes = [];
+
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize();
+window.addEventListener('resize', () => { resize(); initNodes(); });
+
+function initNodes() {
+  nodes = [];
+  const count = Math.floor(W * H / 20000);
+  for (let i = 0; i < count; i++) {
+    nodes.push({
+      x: Math.random() * W, y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.25, vy: (Math.random() - 0.5) * 0.25,
+      r: Math.random() * 1.5 + 0.5
+    });
+  }
+}
+initNodes();
+
+function drawCanvas() {
+  ctx.clearRect(0, 0, W, H);
+  nodes.forEach(n => {
+    n.x += n.vx; n.y += n.vy;
+    if (n.x < 0 || n.x > W) n.vx *= -1;
+    if (n.y < 0 || n.y > H) n.vy *= -1;
+  });
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const dx = nodes[i].x - nodes[j].x;
+      const dy = nodes[i].y - nodes[j].y;
+      const d = Math.sqrt(dx*dx + dy*dy);
+      if (d < 130) {
+        const alpha = (1 - d/130) * 0.25;
+        ctx.beginPath();
+        ctx.moveTo(nodes[i].x, nodes[i].y);
+        ctx.lineTo(nodes[j].x, nodes[j].y);
+        ctx.strokeStyle = `rgba(30,127,232,${alpha})`;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+      }
+    }
+  }
+  nodes.forEach(n => {
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.r, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(30,127,232,0.35)';
+    ctx.fill();
+  });
+  requestAnimationFrame(drawCanvas);
+}
+drawCanvas();
+
+// ── NAV SCROLL ──
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+  navbar.classList.toggle('scrolled', window.scrollY > 60);
+  const scrolled = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+  document.getElementById('progress-bar').style.width = (scrolled * 100) + '%';
+  document.getElementById('back-top').classList.toggle('show', window.scrollY > 400);
+});
+
+// ── MOBILE MENU ──
+function toggleMenu() { document.getElementById('mobileMenu').classList.toggle('open'); }
+
+// ── SCROLL REVEAL ──
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// ── WHATSAPP FORM ──
+function sendToWhatsApp() {
+  const name = document.getElementById('f-name').value.trim();
+  const biz = document.getElementById('f-biz').value;
+  const service = document.getElementById('f-service').value;
+  const msg = document.getElementById('f-message').value.trim();
+  if (!name || !msg) { alert('Please enter your name and describe what you need.'); return; }
+  const text = `Hello Suneja Tech! 👋\n\n*Name:* ${name}\n*Business Type:* ${biz || 'Not specified'}\n*Service Needed:* ${service || 'Not specified'}\n\n*Project Details:*\n${msg}\n\nLooking forward to hearing from you!`;
+  window.open(`https://wa.me/917742693933?text=${encodeURIComponent(text)}`, '_blank');
+}
+</script>
+</body>
+</html>
