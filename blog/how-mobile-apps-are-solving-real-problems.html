@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How Mobile Apps Are Solving Everyday Problems for Real People – Suneja Tech Blog</title>
+<meta name="description" content="From tracking school results to managing a kirana store — mobile apps are quietly revolutionising how ordinary businesses and individuals operate."/>
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,700&family=Outfit:wght@300;400;500;600;700&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+  :root {
+    --blue: #1E7FE8; --cyan: #009d91; --purple: #7B22D4; --magenta: #c8009e;
+    --bg: #ffffff; --bg2: #f5f7ff; --bg3: #eef1fb;
+    --glass: rgba(255,255,255,0.95); --glass-border: rgba(20,40,120,0.09);
+    --text: #111827; --text-muted: #5b6480;
+    --shadow-sm: 0 2px 12px rgba(30,70,180,0.08); --shadow-md: 0 8px 32px rgba(30,70,180,0.12); --shadow-lg: 0 20px 60px rgba(30,70,180,0.16);
+    --font-head: 'Fraunces', serif; --font-body: 'Outfit', sans-serif; --font-text: 'Barlow', sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-text); overflow-x: hidden; line-height: 1.7; }
+  ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: var(--bg2); } ::-webkit-scrollbar-thumb { background: linear-gradient(var(--purple), var(--magenta)); border-radius: 3px; }
+  #canvas-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.18; }
+  #progress-bar { position: fixed; top: 0; left: 0; height: 3px; z-index: 9999; background: linear-gradient(90deg, var(--purple), var(--magenta), var(--blue)); transition: width 0.1s; }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; display: flex; align-items: center; justify-content: space-between; padding: 1rem 5%; background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); border-bottom: 1px solid var(--glass-border); transition: all 0.3s; }
+  nav.scrolled { padding: 0.65rem 5%; box-shadow: 0 4px 28px rgba(30,70,180,0.1); }
+  .nav-logo { display: flex; align-items: center; gap: 0.7rem; text-decoration: none; }
+  .nav-logo img { height: 56px; }
+  .nav-logo span { font-family: var(--font-head); font-size: 1.05rem; font-weight: 700; background: linear-gradient(90deg, var(--blue), var(--purple), var(--magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; }
+  .nav-links { display: flex; align-items: center; gap: 2rem; list-style: none; }
+  .nav-links a { color: var(--text-muted); text-decoration: none; font-family: var(--font-body); font-size: 0.88rem; font-weight: 500; letter-spacing: 0.3px; transition: color 0.3s; position: relative; }
+  .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: linear-gradient(90deg, var(--purple), var(--magenta)); transition: width 0.3s; }
+  .nav-links a:hover { color: var(--purple); } .nav-links a:hover::after { width: 100%; }
+  .nav-cta { background: linear-gradient(135deg, var(--blue), var(--purple)) !important; color: #fff !important; padding: 0.5rem 1.3rem; border-radius: 50px; font-weight: 600 !important; box-shadow: 0 4px 18px rgba(30,144,255,0.3); transition: transform 0.2s, box-shadow 0.2s !important; }
+  .nav-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(30,144,255,0.45) !important; color: #fff !important; } .nav-cta::after { display: none !important; }
+  .hamburger { display: none; cursor: pointer; background: none; border: none; color: var(--purple); font-size: 1.4rem; }
+  .mobile-menu { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.98); z-index: 999; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; backdrop-filter: blur(20px); }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { color: var(--text); font-size: 1.4rem; font-family: var(--font-body); text-decoration: none; font-weight: 600; transition: color 0.2s; } .mobile-menu a:hover { color: var(--purple); }
+  .mobile-close { position: absolute; top: 1.5rem; right: 5%; background: none; border: none; color: var(--purple); font-size: 1.5rem; cursor: pointer; }
+
+  .article-hero { min-height: 70vh; display: flex; align-items: flex-end; padding: 120px 5% 60px; position: relative; overflow: hidden; }
+  .article-hero-bg { position: absolute; inset: 0; z-index: 0; background-image: url('https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1400&q=80'); background-size: cover; background-position: center; filter: brightness(0.2) saturate(0.6); }
+  .article-hero-overlay { position: absolute; inset: 0; z-index: 1; background: linear-gradient(to top, rgba(18,8,40,0.98) 0%, rgba(18,8,40,0.55) 50%, rgba(18,8,40,0.1) 100%); }
+  .article-hero-content { position: relative; z-index: 2; max-width: 800px; }
+  .article-cat { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(123,34,212,0.15); border: 1px solid rgba(123,34,212,0.4); border-radius: 50px; padding: 0.3rem 1rem; font-size: 0.76rem; color: #c89dff; letter-spacing: 2px; margin-bottom: 1.5rem; font-family: var(--font-body); font-weight: 600; text-transform: uppercase; backdrop-filter: blur(10px); }
+  .article-hero-title { font-family: var(--font-head); font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.1; color: #fff; margin-bottom: 1.2rem; text-shadow: 0 2px 20px rgba(0,0,0,0.4); }
+  .article-meta { display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; }
+  .article-meta-item { display: flex; align-items: center; gap: 0.5rem; color: rgba(255,255,255,0.65); font-size: 0.85rem; font-family: var(--font-body); }
+  .article-meta-item i { color: #c89dff; }
+
+  .article-layout { max-width: 1100px; margin: 0 auto; padding: 4rem 5%; display: grid; grid-template-columns: 1fr 320px; gap: 4rem; align-items: start; position: relative; z-index: 1; }
+  .article-body { min-width: 0; }
+  .article-content .lead { font-size: 1.2rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 2.5rem; padding-bottom: 2.5rem; border-bottom: 1px solid var(--glass-border); font-style: italic; }
+  .article-content h2 { font-family: var(--font-head); font-size: clamp(1.4rem, 2.5vw, 1.9rem); font-weight: 700; margin: 2.5rem 0 1rem; background: linear-gradient(135deg, var(--text) 40%, var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .article-content h3 { font-family: var(--font-body); font-size: 1.15rem; font-weight: 700; color: var(--text); margin: 2rem 0 0.8rem; }
+  .article-content p { color: var(--text-muted); font-size: 1rem; line-height: 1.85; margin-bottom: 1.4rem; }
+  .article-content strong { color: var(--text); font-weight: 600; }
+  .article-content ul, .article-content ol { padding-left: 1.5rem; margin-bottom: 1.4rem; }
+  .article-content li { color: var(--text-muted); font-size: 1rem; line-height: 1.8; margin-bottom: 0.5rem; }
+  .article-content li::marker { color: var(--purple); }
+  .pullquote { margin: 2.5rem 0; padding: 2rem 2.5rem; border-left: 4px solid var(--purple); background: var(--bg2); border-radius: 0 16px 16px 0; position: relative; }
+  .pullquote::before { content: '\201C'; position: absolute; top: -10px; left: 20px; font-family: Georgia, serif; font-size: 5rem; color: var(--purple); opacity: 0.15; line-height: 1; }
+  .pullquote p { font-family: var(--font-head); font-size: 1.25rem; font-style: italic; color: var(--text); line-height: 1.6; margin: 0; }
+  .pullquote cite { display: block; margin-top: 0.8rem; font-size: 0.82rem; color: var(--purple); font-style: normal; font-family: var(--font-body); font-weight: 600; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; margin: 2.5rem 0; }
+  .stat-box { background: #fff; border: 1px solid var(--glass-border); border-radius: 16px; padding: 1.4rem; text-align: center; box-shadow: var(--shadow-sm); }
+  .stat-box .num { font-family: var(--font-head); font-size: 2rem; font-weight: 700; background: linear-gradient(135deg, var(--purple), var(--magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-box .lbl { font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-body); margin-top: 0.3rem; line-height: 1.4; }
+
+  .tip-box { background: linear-gradient(135deg, rgba(123,34,212,0.05), rgba(200,0,158,0.05)); border: 1px solid rgba(123,34,212,0.15); border-radius: 16px; padding: 1.8rem; margin: 2rem 0; }
+  .tip-box .tip-head { display: flex; align-items: center; gap: 0.7rem; font-family: var(--font-body); font-weight: 700; color: var(--purple); margin-bottom: 0.8rem; font-size: 1rem; }
+  .tip-box p, .tip-box li { font-size: 0.95rem; color: var(--text-muted); }
+  .checklist { list-style: none; padding: 0; }
+  .checklist li { display: flex; align-items: flex-start; gap: 0.8rem; padding: 0.6rem 0; border-bottom: 1px solid var(--glass-border); }
+  .checklist li:last-child { border-bottom: none; }
+  .checklist li::before { display: none; }
+  .checklist li i { color: var(--purple); flex-shrink: 0; margin-top: 0.2rem; }
+  .checklist li span { color: var(--text-muted); font-size: 0.95rem; }
+
+  /* App showcase cards */
+  .app-showcase { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 2rem 0; }
+  .app-card { background: #fff; border: 1px solid var(--glass-border); border-radius: 18px; padding: 1.5rem; box-shadow: var(--shadow-sm); transition: transform 0.3s, box-shadow 0.3s; }
+  .app-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+  .app-card-icon { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: 1rem; }
+  .app-card-icon.purple { background: linear-gradient(135deg, rgba(123,34,212,0.1), rgba(200,0,158,0.1)); color: var(--purple); }
+  .app-card-icon.blue { background: linear-gradient(135deg, rgba(30,127,232,0.1), rgba(0,157,145,0.1)); color: var(--blue); }
+  .app-card-icon.magenta { background: linear-gradient(135deg, rgba(200,0,158,0.1), rgba(123,34,212,0.1)); color: var(--magenta); }
+  .app-card-icon.cyan { background: linear-gradient(135deg, rgba(0,157,145,0.1), rgba(30,127,232,0.1)); color: var(--cyan); }
+  .app-card h4 { font-family: var(--font-body); font-size: 0.95rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem; }
+  .app-card p { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin: 0; }
+
+  .article-cta-box { background: linear-gradient(135deg, var(--purple), var(--magenta)); border-radius: 20px; padding: 2.5rem; text-align: center; margin: 3rem 0; box-shadow: var(--shadow-lg); }
+  .article-cta-box h3 { font-family: var(--font-head); font-size: 1.6rem; color: #fff; margin-bottom: 0.8rem; }
+  .article-cta-box p { color: rgba(255,255,255,0.85); font-size: 0.95rem; margin-bottom: 1.5rem; max-width: 400px; margin-left: auto; margin-right: auto; }
+  .btn-cta-white { display: inline-flex; align-items: center; gap: 0.6rem; background: #fff; color: var(--purple); padding: 0.85rem 2rem; border-radius: 50px; font-family: var(--font-body); font-weight: 700; font-size: 0.92rem; text-decoration: none; transition: all 0.3s; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+  .btn-cta-white:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+  .article-sidebar { position: sticky; top: 100px; }
+  .sidebar-widget { background: #fff; border: 1px solid var(--glass-border); border-radius: 20px; padding: 1.6rem; box-shadow: var(--shadow-sm); margin-bottom: 1.5rem; overflow: hidden; position: relative; }
+  .sidebar-widget::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--purple), var(--magenta), var(--blue), var(--cyan)); }
+  .sidebar-widget h4 { font-family: var(--font-body); font-size: 0.88rem; font-weight: 700; color: var(--text); margin-bottom: 1.2rem; text-transform: uppercase; letter-spacing: 1px; }
+  .toc-list { list-style: none; }
+  .toc-list li { margin-bottom: 0.5rem; }
+  .toc-list a { color: var(--text-muted); text-decoration: none; font-size: 0.87rem; font-family: var(--font-body); display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0; transition: color 0.2s; }
+  .toc-list a:hover { color: var(--purple); }
+  .toc-list a::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--purple); opacity: 0.4; flex-shrink: 0; transition: opacity 0.2s; }
+  .toc-list a:hover::before { opacity: 1; }
+  .related-card { display: flex; gap: 0.8rem; align-items: flex-start; padding: 0.8rem 0; border-bottom: 1px solid var(--glass-border); text-decoration: none; transition: all 0.2s; }
+  .related-card:last-child { border-bottom: none; padding-bottom: 0; }
+  .related-card:hover .related-title { color: var(--purple); }
+  .related-img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+  .related-cat { font-size: 0.7rem; color: var(--purple); font-family: var(--font-body); font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px; }
+  .related-title { font-size: 0.83rem; color: var(--text); font-family: var(--font-body); font-weight: 600; line-height: 1.4; transition: color 0.2s; }
+  .author-card { display: flex; gap: 1rem; align-items: flex-start; }
+  .author-avatar { width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--magenta)); display: flex; align-items: center; justify-content: center; font-family: var(--font-head); font-size: 1.2rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .author-name { font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; color: var(--text); }
+  .author-role { font-size: 0.78rem; color: var(--purple); font-family: var(--font-body); margin-bottom: 0.5rem; }
+  .author-bio { font-size: 0.82rem; color: var(--text-muted); line-height: 1.6; }
+  .share-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+  .share-btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 1rem; border-radius: 50px; font-size: 0.8rem; font-family: var(--font-body); font-weight: 600; text-decoration: none; border: 1.5px solid; transition: all 0.2s; cursor: pointer; background: transparent; }
+  .share-btn.wa { border-color: #25D366; color: #25D366; } .share-btn.wa:hover { background: #25D366; color: #fff; }
+  .share-btn.tw { border-color: #1DA1F2; color: #1DA1F2; } .share-btn.tw:hover { background: #1DA1F2; color: #fff; }
+  .share-btn.li { border-color: #0A66C2; color: #0A66C2; } .share-btn.li:hover { background: #0A66C2; color: #fff; }
+  .breadcrumb { position: relative; z-index: 1; padding: 1rem 5%; max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 0.5rem; }
+  .breadcrumb a { color: var(--text-muted); text-decoration: none; font-size: 0.82rem; font-family: var(--font-body); transition: color 0.2s; } .breadcrumb a:hover { color: var(--purple); }
+  .breadcrumb span { color: var(--text-muted); font-size: 0.82rem; }
+  .breadcrumb .current { color: var(--purple); font-size: 0.82rem; font-family: var(--font-body); }
+  .article-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 2.5rem 0 0; padding-top: 2rem; border-top: 1px solid var(--glass-border); }
+  .tag { padding: 0.3rem 0.9rem; border-radius: 50px; font-size: 0.78rem; font-family: var(--font-body); font-weight: 500; background: rgba(123,34,212,0.07); border: 1px solid rgba(123,34,212,0.18); color: var(--purple); }
+  footer { background: #0f1628; border-top: 1px solid rgba(255,255,255,0.06); padding: 3rem 5% 2rem; position: relative; z-index: 1; }
+  .footer-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; margin-bottom: 3rem; }
+  .footer-brand p { color: rgba(255,255,255,0.5); font-size: 0.88rem; line-height: 1.7; margin: 1rem 0; max-width: 280px; }
+  .footer-socials { display: flex; gap: 0.7rem; }
+  .social-btn { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 0.9rem; text-decoration: none; transition: all 0.3s; }
+  .social-btn:hover { border-color: var(--purple); color: var(--purple); transform: translateY(-2px); background: rgba(123,34,212,0.1); }
+  .footer-col h4 { font-family: var(--font-body); font-size: 0.9rem; font-weight: 700; color: rgba(255,255,255,0.85); margin-bottom: 1.2rem; }
+  .footer-col ul { list-style: none; }
+  .footer-col ul li { margin-bottom: 0.6rem; }
+  .footer-col ul li a { color: rgba(255,255,255,0.45); text-decoration: none; font-size: 0.87rem; transition: color 0.2s; font-family: var(--font-body); } .footer-col ul li a:hover { color: rgba(255,255,255,0.85); }
+  .footer-logo-text { font-family: var(--font-head); font-size: 1rem; font-weight: 700; background: linear-gradient(90deg, var(--cyan), var(--blue), var(--magenta)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 0.5px; display: flex; align-items: center; padding-left: 0.7rem; }
+  .footer-bottom { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.07); padding-top: 1.5rem; }
+  .footer-bottom p { font-size: 0.82rem; color: rgba(255,255,255,0.35); } .footer-bottom span { color: var(--magenta); }
+  .glow-divider { height: 1px; background: linear-gradient(90deg, transparent, var(--purple), var(--magenta), var(--blue), transparent); opacity: 0.2; }
+  #back-top { position: fixed; bottom: 2rem; right: 2rem; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--magenta)); color: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1rem; z-index: 999; opacity: 0; transform: translateY(20px); transition: all 0.3s; box-shadow: 0 4px 20px rgba(123,34,212,0.4); }
+  #back-top.show { opacity: 1; transform: translateY(0); } #back-top:hover { transform: translateY(-3px); }
+  .reveal { opacity: 0; transform: translateY(30px); transition: all 0.7s cubic-bezier(0.16,1,0.3,1); } .reveal.visible { opacity: 1; transform: translateY(0); }
+  @media (max-width: 900px) { .nav-links { display: none; } .hamburger { display: block; } .article-layout { grid-template-columns: 1fr; } .article-sidebar { position: static; } .stat-row { grid-template-columns: 1fr 1fr; } .footer-inner { grid-template-columns: 1fr 1fr; } .app-showcase { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .stat-row { grid-template-columns: 1fr; } .footer-inner { grid-template-columns: 1fr; } .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; } }
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<canvas id="canvas-bg"></canvas>
+
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="images/suneja-tech-logo.png" alt="Suneja Tech Logo"/>
+    <span>SUNEJA TECH</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="index.html#services">Services</a></li>
+    <li><a href="index.html#projects">Projects</a></li>
+    <li><a href="index.html#founder">Founder</a></li>
+    <li><a href="index.html#blog">Blog</a></li>
+    <li><a href="index.html#contact" class="nav-cta">Get a Quote</a></li>
+  </ul>
+  <button class="hamburger" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" onclick="toggleMenu()"><i class="fas fa-times"></i></button>
+  <a href="index.html#about" onclick="toggleMenu()">About</a>
+  <a href="index.html#services" onclick="toggleMenu()">Services</a>
+  <a href="index.html#projects" onclick="toggleMenu()">Projects</a>
+  <a href="index.html#founder" onclick="toggleMenu()">Founder</a>
+  <a href="index.html#blog" onclick="toggleMenu()">Blog</a>
+  <a href="index.html#contact" onclick="toggleMenu()">Get a Quote</a>
+</div>
+
+<!-- HERO -->
+<section class="article-hero">
+  <div class="article-hero-bg"></div>
+  <div class="article-hero-overlay"></div>
+  <div class="article-hero-content">
+    <div class="article-cat"><i class="fas fa-mobile-alt"></i> Mobile Technology</div>
+    <h1 class="article-hero-title">How Mobile Apps Are Solving Everyday Problems for Real People</h1>
+    <div class="article-meta">
+      <div class="article-meta-item"><i class="fas fa-calendar-alt"></i> January 18, 2025</div>
+      <div class="article-meta-item"><i class="fas fa-user"></i> Sourabh Suneja</div>
+      <div class="article-meta-item"><i class="fas fa-clock"></i> 7 min read</div>
+    </div>
+  </div>
+</section>
+
+<div class="breadcrumb">
+  <a href="index.html">Home</a><span>/</span>
+  <a href="index.html#blog">Blog</a><span>/</span>
+  <span class="current">Mobile Apps for Real Problems</span>
+</div>
+
+<div class="article-layout">
+  <article class="article-body">
+    <div class="article-content">
+
+      <p class="lead">From tracking school results to managing a kirana store — mobile apps are quietly revolutionising how ordinary businesses and individuals operate. Not just in tech hubs, but in every town, school, and shop across India.</p>
+
+      <p>When most people think of mobile apps, they picture billion-dollar companies — Swiggy, Zomato, GPay. But the real revolution in mobile technology isn't happening at the top. It's happening in the classrooms of small-town schools, in the inventory books of local kirana stores, and on the phones of yoga instructors who suddenly have a direct line to their students.</p>
+
+      <p>At Suneja Tech, we've seen this revolution up close. And it is genuinely exciting.</p>
+
+      <div class="stat-row reveal">
+        <div class="stat-box">
+          <div class="num">750M+</div>
+          <div class="lbl">smartphone users in India — the second largest in the world</div>
+        </div>
+        <div class="stat-box">
+          <div class="num">4.5 hrs</div>
+          <div class="lbl">average daily time Indians spend on their smartphones</div>
+        </div>
+        <div class="stat-box">
+          <div class="num">6×</div>
+          <div class="lbl">higher engagement through apps vs mobile websites</div>
+        </div>
+      </div>
+
+      <h2 id="problem-solvers">Apps as Everyday Problem Solvers</h2>
+      <p>The most impactful apps are not the ones that reinvent the world. They are the ones that solve a very specific, very real, very daily problem for a specific group of people. That is what makes mobile technology so powerful — and so personal.</p>
+      <p>A teacher who spends an hour every day manually recording attendance can now do it in seconds on an app. A shopkeeper who maintained a khata notebook can now track every credit transaction, send payment reminders, and generate reports — from the same phone they already carry everywhere.</p>
+      <p>The app didn't change their life dramatically. It just made one important thing considerably less painful. And that matters enormously.</p>
+
+      <div class="pullquote">
+        <p>The best app isn't the most feature-rich one. It's the one that solves your exact problem so naturally that you forget you're even using technology.</p>
+        <cite>— Sourabh Suneja, Founder, Suneja Tech</cite>
+      </div>
+
+      <h2 id="education">Transforming Education, One School at a Time</h2>
+      <p>Education is one of the sectors where mobile apps have had the most tangible impact in India — and most of that impact hasn't come from billion-dollar EdTech companies. It has come from small, purpose-built solutions designed for real schools and real students.</p>
+      <p>Our <strong>JVP Spark App</strong>, built for Jamna Vidyapeeth, is a perfect example. Students can now check their results, attempt AI-generated quizzes, access worksheets, use a personalised chatbot for academic queries, and track their own progress — all from a single app on their phones.</p>
+      <p>The <strong>JVP Teachers App</strong> gave teachers an equally powerful tool: AI-assisted attendance marking, mark entry, lesson plan generation, and syllabus tracking. Tasks that once consumed hours of a teacher's time now take minutes.</p>
+
+      <div class="app-showcase reveal">
+        <div class="app-card">
+          <div class="app-card-icon purple"><i class="fas fa-graduation-cap"></i></div>
+          <h4>JVP Spark (Student App)</h4>
+          <p>AI quizzes, result tracking, chatbot support, gamified self-assessment — all in one place for every student.</p>
+        </div>
+        <div class="app-card">
+          <div class="app-card-icon blue"><i class="fas fa-chalkboard-teacher"></i></div>
+          <h4>JVP Teachers App</h4>
+          <p>AI-assisted lesson plans, attendance, mark entry, and syllabus management. Saving hours every day for every teacher.</p>
+        </div>
+        <div class="app-card">
+          <div class="app-card-icon magenta"><i class="fas fa-shopping-basket"></i></div>
+          <h4>ScanNBill (Retail App)</h4>
+          <p>Barcode generation, inventory tracking, credit management, and billing — turning any Android phone into a free PoS machine.</p>
+        </div>
+        <div class="app-card">
+          <div class="app-card-icon cyan"><i class="fas fa-spa"></i></div>
+          <h4>Wellness & Services</h4>
+          <p>Booking systems, client management, service listings, and payment collection for coaches and wellness brands.</p>
+        </div>
+      </div>
+
+      <h2 id="retail">Revolutionising the Kirana Store</h2>
+      <p>India has over 12 million kirana stores — the backbone of retail in this country. For decades, these stores operated with paper notebooks, mental arithmetic, and a lot of trust. Digital tools? "That's for big companies," the shopkeeper would say.</p>
+      <p>Our <strong>ScanNBill</strong> app changed that narrative. It turns any Android smartphone into a fully functional Point of Sale system — for free. Generate barcodes, manage inventory, track which customers have taken items on credit, view sales analytics, and produce digital bills.</p>
+      <p>The testimonial from Jatin, owner of Jatin Kirana Store, says it all: <em>"ScanNBill turned my phone into a full PoS system at zero cost. I don't know how I managed without it before."</em> That's the power of an app that genuinely solves a real problem.</p>
+
+      <div class="tip-box reveal">
+        <div class="tip-head"><i class="fas fa-store"></i> What ScanNBill Does for Retailers</div>
+        <ul class="checklist">
+          <li><i class="fas fa-check-circle"></i><span>Generates unique barcodes for every product</span></li>
+          <li><i class="fas fa-check-circle"></i><span>Tracks real-time inventory across all items</span></li>
+          <li><i class="fas fa-check-circle"></i><span>Manages customer credit and sends payment reminders</span></li>
+          <li><i class="fas fa-check-circle"></i><span>Logs daily and monthly sales with analytics</span></li>
+          <li><i class="fas fa-check-circle"></i><span>Generates digital bills that can be shared via WhatsApp</span></li>
+          <li><i class="fas fa-check-circle"></i><span>Works completely offline — no internet required for core features</span></li>
+        </ul>
+      </div>
+
+      <h2 id="ai-apps">When Apps Get Smarter: AI Integration</h2>
+      <p>The next frontier in everyday mobile apps is Artificial Intelligence — not the kind that replaces people, but the kind that quietly makes tools more useful. AI is increasingly finding its way into the most practical applications.</p>
+      <p>In the JVP Teachers App, <strong>AI generates lesson plans</strong> tailored to the curriculum and the teacher's specific requirements. The teacher reviews and adjusts — but instead of starting from scratch, they start from a ready-made foundation. That alone saves hours every week.</p>
+      <p>In the JVP Spark Student App, the <strong>AI chatbot</strong> answers academic questions patiently at any hour — removing the barrier that students often feel about asking their teachers "basic" questions.</p>
+      <p>These aren't sci-fi applications. They are practical, grounded, and genuinely useful. And they are now accessible to schools and businesses that could never have afforded enterprise AI tools even five years ago.</p>
+
+      <h2 id="low-cost">The Affordability Revolution</h2>
+      <p>Here is perhaps the most important shift: <strong>powerful mobile apps no longer cost a fortune to build or use</strong>. The tools, technologies, and expertise that once required massive investment are now accessible at a fraction of the cost.</p>
+      <p>At Suneja Tech, we've made it our mission to bring this accessibility to the businesses and institutions that need it most — schools, small retailers, coaching centres, wellness practitioners. These are not organisations with IT budgets. But they have real problems. And they deserve real solutions.</p>
+      <p>We build apps that fit the problem and the budget — not the other way around. No bloated features nobody uses. No per-seat licensing that becomes unaffordable at scale. Just clean, purposeful software that works for the people using it.</p>
+
+      <div class="pullquote">
+        <p>Technology should serve everyone, not just those who can afford enterprise software. The best solutions are often the simplest ones — built specifically for the people who need them.</p>
+      </div>
+
+      <h2 id="build">Is a Mobile App Right for Your Business?</h2>
+      <p>Not every business needs a custom mobile app. But more businesses than you might think would benefit from one. Here are the signs that an app could transform your operations:</p>
+
+      <div class="tip-box reveal">
+        <div class="tip-head"><i class="fas fa-question-circle"></i> Signs Your Business Needs a Mobile App</div>
+        <ul class="checklist">
+          <li><i class="fas fa-check-circle"></i><span>You have <strong>repeat customers</strong> who interact with your business frequently</span></li>
+          <li><i class="fas fa-check-circle"></i><span>You do a lot of <strong>manual data entry</strong> — attendance, inventory, orders, appointments</span></li>
+          <li><i class="fas fa-check-circle"></i><span>You need to <strong>communicate with a community</strong> — students, clients, members</span></li>
+          <li><i class="fas fa-check-circle"></i><span>You want to <strong>offer personalisation</strong> — recommendations, progress tracking, custom content</span></li>
+          <li><i class="fas fa-check-circle"></i><span>You're losing time to tasks that <strong>could be automated</strong></span></li>
+          <li><i class="fas fa-check-circle"></i><span>You want to <strong>stand out</strong> from competitors who have no digital product</span></li>
+        </ul>
+      </div>
+
+      <h2 id="conclusion">The Quiet Revolution</h2>
+      <p>The mobile app revolution in India is quiet precisely because it is happening in places that don't get headlines. It's in a teacher's hand as she marks 80 students' attendance in 30 seconds. It's in a kirana store owner's confidence as he instantly checks which customers owe him money. It's in a student's relief when the AI chatbot answers his question at 11 PM before an exam.</p>
+      <p>These are real people, solving real problems, with technology that was built specifically for them. That's the story we at Suneja Tech are proud to be a part of — and the revolution we're committed to continuing.</p>
+      <p>If you have a problem that a mobile app could solve, we'd love to hear about it. Your idea might be the next quiet revolution.</p>
+
+      <div class="article-cta-box reveal">
+        <h3>Have an Idea for an App?</h3>
+        <p>Tell us about the problem you want to solve. We'll build the app that solves it — affordably, beautifully, and built for real people.</p>
+        <a href="index.html#contact" class="btn-cta-white"><i class="fas fa-mobile-alt"></i> Discuss Your App Idea</a>
+      </div>
+
+      <div class="article-tags">
+        <span class="tag">Mobile Apps</span>
+        <span class="tag">Android</span>
+        <span class="tag">EdTech</span>
+        <span class="tag">Retail</span>
+        <span class="tag">AI</span>
+        <span class="tag">Small Business</span>
+        <span class="tag">India</span>
+      </div>
+
+    </div>
+  </article>
+
+  <aside class="article-sidebar">
+    <div class="sidebar-widget reveal">
+      <h4>Table of Contents</h4>
+      <ul class="toc-list">
+        <li><a href="#problem-solvers">Apps as Everyday Problem Solvers</a></li>
+        <li><a href="#education">Transforming Education</a></li>
+        <li><a href="#retail">Revolutionising the Kirana Store</a></li>
+        <li><a href="#ai-apps">When Apps Get Smarter: AI</a></li>
+        <li><a href="#low-cost">The Affordability Revolution</a></li>
+        <li><a href="#build">Is an App Right for You?</a></li>
+        <li><a href="#conclusion">The Quiet Revolution</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-widget reveal">
+      <h4>About the Author</h4>
+      <div class="author-card">
+        <div class="author-avatar">S</div>
+        <div>
+          <div class="author-name">Sourabh Suneja</div>
+          <div class="author-role">Founder & CEO, Suneja Tech</div>
+          <div class="author-bio">IT Educator & Software Developer with 5+ years of building digital solutions for businesses of all sizes across India.</div>
+        </div>
+      </div>
+    </div>
+    <div class="sidebar-widget reveal">
+      <h4>Share This Article</h4>
+      <div class="share-btns">
+        <button class="share-btn wa" onclick="shareWA()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+        <button class="share-btn tw" onclick="shareTW()"><i class="fab fa-twitter"></i> Twitter</button>
+        <button class="share-btn li" onclick="shareLI()"><i class="fab fa-linkedin-in"></i> LinkedIn</button>
+      </div>
+    </div>
+    <div class="sidebar-widget reveal">
+      <h4>Related Articles</h4>
+      <a href="blog-digital-presence-2026.html" class="related-card">
+        <img src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=200&q=80" alt="Digital Presence" class="related-img"/>
+        <div>
+          <div class="related-cat">Digital Strategy</div>
+          <div class="related-title">Why Every Business Needs a Digital Presence in 2026</div>
+        </div>
+      </a>
+      <a href="blog-website-customers.html" class="related-card">
+        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=200&q=80" alt="Website Customers" class="related-img"/>
+        <div>
+          <div class="related-cat">Growth</div>
+          <div class="related-title">How a Professional Website Turns Visitors into Paying Customers</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+</div>
+
+<div class="glow-divider"></div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="index.html" style="display:inline-flex;align-items:center;margin-bottom:0.5rem;text-decoration:none;">
+        <img src="images/suneja-tech-logo.png" alt="Suneja Tech" style="height:50px;"/>
+        <span class="footer-logo-text">SUNEJA TECH</span>
+      </a>
+      <p>Your Dream. Our Code. Building digital experiences that matter — from concepts to customers, for businesses of all kinds.</p>
+      <div class="footer-socials">
+        <a href="https://wa.me/918619153370" class="social-btn" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        <a href="mailto:sourabhsuneja021@gmail.com" class="social-btn"><i class="fas fa-envelope"></i></a>
+        <a href="#" class="social-btn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Services</h4><ul><li><a href="index.html#services">Web Development</a></li><li><a href="index.html#services">Android Apps</a></li><li><a href="index.html#services">iOS Apps</a></li><li><a href="index.html#services">Deployment</a></li><li><a href="index.html#services">AI Features</a></li><li><a href="index.html#services">Support</a></li></ul></div>
+    <div class="footer-col"><h4>Company</h4><ul><li><a href="index.html#about">About Us</a></li><li><a href="index.html#founder">Our Founder</a></li><li><a href="index.html#projects">Portfolio</a></li><li><a href="index.html#blog">Blog</a></li></ul></div>
+    <div class="footer-col"><h4>Get In Touch</h4><ul><li><a href="tel:+918619153370">+91 86191 53370</a></li><li><a href="mailto:sourabhsuneja021@gmail.com">Email Us</a></li><li><a href="https://wa.me/918619153370" target="_blank">WhatsApp</a></li><li><a href="index.html#contact">Send a Query</a></li></ul></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Suneja Tech. Built with <span>♥</span> by Sourabh Suneja.</p>
+    <p style="font-size:0.78rem;color:rgba(255,255,255,0.3);">Your Dream. Our Code.</p>
+  </div>
+</footer>
+
+<button id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-chevron-up"></i></button>
+
+<script>
+const canvas=document.getElementById('canvas-bg'),ctx=canvas.getContext('2d');let W,H,nodes=[];
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',()=>{resize();initNodes();});
+function initNodes(){nodes=[];const c=Math.floor(W*H/20000);for(let i=0;i<c;i++)nodes.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-0.5)*0.25,vy:(Math.random()-0.5)*0.25,r:Math.random()*1.5+0.5});}
+initNodes();
+function drawCanvas(){ctx.clearRect(0,0,W,H);nodes.forEach(n=>{n.x+=n.vx;n.y+=n.vy;if(n.x<0||n.x>W)n.vx*=-1;if(n.y<0||n.y>H)n.vy*=-1;});for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){const dx=nodes[i].x-nodes[j].x,dy=nodes[i].y-nodes[j].y,d=Math.sqrt(dx*dx+dy*dy);if(d<130){const a=(1-d/130)*0.25;ctx.beginPath();ctx.moveTo(nodes[i].x,nodes[i].y);ctx.lineTo(nodes[j].x,nodes[j].y);ctx.strokeStyle=`rgba(123,34,212,${a})`;ctx.lineWidth=0.5;ctx.stroke();}}nodes.forEach(n=>{ctx.beginPath();ctx.arc(n.x,n.y,n.r,0,Math.PI*2);ctx.fillStyle='rgba(123,34,212,0.3)';ctx.fill();});requestAnimationFrame(drawCanvas);}
+drawCanvas();
+const navbar=document.getElementById('navbar');
+window.addEventListener('scroll',()=>{navbar.classList.toggle('scrolled',window.scrollY>60);const s=window.scrollY/(document.documentElement.scrollHeight-window.innerHeight);document.getElementById('progress-bar').style.width=(s*100)+'%';document.getElementById('back-top').classList.toggle('show',window.scrollY>400);});
+function toggleMenu(){document.getElementById('mobileMenu').classList.toggle('open');}
+const io=new IntersectionObserver(e=>{e.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target);}});},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+function shareWA(){window.open(`https://wa.me/?text=${encodeURIComponent('Check out: How Mobile Apps Are Solving Everyday Problems for Real People — '+window.location.href)}`,'_blank');}
+function shareTW(){window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent('How Mobile Apps Are Solving Everyday Problems for Real People')}&url=${encodeURIComponent(window.location.href)}`,'_blank');}
+function shareLI(){window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`,'_blank');}
+</script>
+</body>
+</html>
