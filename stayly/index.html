@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  Stayly - Airbnb listing page clone (take-home assignment, PlayPower Labs)
+  ============================================================================
+  A single-file, zero-build React 18 app.
+  - React + ReactDOM are loaded from cdnjs (UMD builds) so the page runs on any
+    device by simply opening index.html - no npm, bundler or server needed.
+  - Uses React.createElement (aliased to `h`) instead of JSX, since there is no
+    Babel/build step.
+  - All state lives in React state; only two small preferences (saved heart and
+    selected dates) are persisted to localStorage.
+  - Images come from Unsplash / pravatar; icons from Font Awesome (cdnjs).
+
+  File layout (top to bottom):
+    1. <style>   Design tokens + component styles, grouped per page section
+    2. <script>  Helpers -> icons -> data -> components -> <App> -> render
+
+  NOTE: comments only were added in the documented version; behaviour and
+  markup are unchanged from the original clone.
+  ============================================================================
+-->
+<html lang="en"><head><meta charset="utf-8"><title>Sea-view serviced apartment · Candolim</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+/* ---------- Design tokens & global reset ----------
+   --pc : brand (primary) colour, --g : grey text, --l : light divider */
+:root{--pc:#ff7f6b;--g:#717171;--l:#ebebeb}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;line-height:1.5;color:#000;background:#fff}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
+button:focus-visible,a:focus-visible{outline:2px solid #000;outline-offset:2px}
+/* .w : centred page container */
+.w{max-width:1120px;margin:0 auto;padding:0 40px}
+/* ---------- Top header (logo, search pill, right-hand menu) ---------- */
+.hd{height:80px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;border-bottom:1px solid var(--l)}
+.logo{color:var(--pc);font-size:29px;font-weight:700;display:flex;align-items:center;gap:6px;text-decoration:none}
+.pill{display:flex;align-items:center;border:1px solid #ddd;border-radius:40px;box-shadow:0 1px 4px rgba(0,0,0,.15);padding:8px 8px 8px 20px;font-size:16px;font-weight:600;gap:0;cursor:pointer;transition:box-shadow .2s}
+.pill:hover{box-shadow:0 4px 14px rgba(0,0,0,.28)}
+.pill span{padding:0 16px;border-right:1px solid var(--l)}.pill span:nth-child(3){border:0;color:var(--g);font-weight:400}
+.pill span:first-child{display:flex;gap:8px;align-items:center;padding-left:0}
+.sb{width:32px;height:32px;border-radius:50%;background:var(--pc);color:#fff;display:grid;place-items:center;font-size:15px}
+.rt{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:600}
+.rt a{padding:10px 14px;color:#000;text-decoration:none;border-radius:24px;transition:background .2s}
+.rt a:hover{background:#f2f2f2}
+.ci{width:38px;height:38px;border-radius:50%;background:#f2f2f2;display:grid;place-items:center;cursor:pointer;transition:background .2s,color .2s}
+.ci:hover{background:#dedede;color:#444}
+/* ---------- Sticky section-tab bar (replaces header after scrolling past photos) ---------- */
+.stk{position:fixed;top:0;left:0;right:0;z-index:20;background:#fff;border-bottom:1px solid var(--l);height:80px;animation:dn .25s}
+@keyframes dn{from{transform:translateY(-100%)}}
+.stk .w{display:flex;height:100%;align-items:center;justify-content:space-between}
+.tabs a{display:inline-block;padding:29px 0;margin-right:24px;font-size:16px;font-weight:600;color:#000;text-decoration:none;border-bottom:3px solid transparent}
+.tabs a.on{border-color:#000}
+.sm{display:flex;align-items:center;gap:20px;font-size:16px}
+.sm b{font-size:18px}
+.rb{background:var(--pc);color:#fff;border-radius:40px;padding:12px 28px;font-weight:600}
+/* ---------- Typography, title row & share/save links ---------- */
+h1{font-size:29px;margin:24px 0 0;font-weight:600}h2{font-size:25px;font-weight:600;margin:0 0 24px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:24px 0 16px}.top h1{margin:0}
+.ul{text-decoration:underline;font-weight:600;font-size:16px;padding:8px 10px;border-radius:8px}.ul:hover{background:#f2f2f2}
+.ul i{margin-right:6px}
+/* ---------- Hero photo collage (1 large + 4 small) ---------- */
+.col{display:grid;grid-template-columns:1fr 1fr;gap:8px;height:600px;border-radius:14px;overflow:hidden;position:relative}
+.col .m{height:100%}.col .q{display:grid;grid-template:1fr 1fr/1fr 1fr;gap:8px}
+/* .ph : reusable photo tile with hover zoom */
+.ph{overflow:hidden;position:relative;background:#eee;cursor:pointer;width:100%;height:100%;display:block}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.ph:hover img{transform:scale(1.05)}
+.sa{position:absolute;right:16px;bottom:16px;background:#fff;border:1px solid #222;border-radius:8px;padding:7px 14px;font-size:16px;font-weight:600;display:flex;gap:8px;align-items:center}
+/* ---------- Generic section wrapper & rating strip ---------- */
+.sec{padding:32px 0;border-bottom:1px solid var(--l)}
+.gr{color:var(--g)}.sub{font-size:18px}
+.rv{display:flex;align-items:center;border:1px solid #ddd;border-radius:12px;height:92px;margin:24px 0;max-width:100%}
+.rv>div{flex:1;text-align:center}.rv .fv{font-weight:700;font-size:18px;border-right:1px solid #ddd;height:56px;display:flex;align-items:center;justify-content:center;gap:8px}
+.rv .fv i{color:var(--pc)}.rv b{font-size:25px}
+/* ---------- Host summary, highlight features, description ---------- */
+.av{width:48px;height:48px;border-radius:50%;object-fit:cover}
+.hs{display:flex;gap:16px;align-items:center}
+.ft{display:flex;gap:16px;margin-bottom:24px}.ft i{width:28px;font-size:27px;text-align:center;margin-top:4px}
+.ft b{font-weight:600;display:block}
+/* .desc : collapsible text block (max-height is animated from React) */
+.desc{white-space:pre-line;overflow:hidden;transition:max-height .35s;position:relative}
+.desc .fade{position:absolute;left:0;right:0;bottom:0;height:48px;background:linear-gradient(to bottom,rgba(255,255,255,0),#fff 85%);pointer-events:none}
+.xlate{display:flex;align-items:center;justify-content:space-between;gap:20px;background:#f7f7f7;border-radius:12px;padding:18px 22px;margin-bottom:20px;font-size:16px}
+.xlink{font-weight:600;text-decoration:underline;white-space:nowrap;flex-shrink:0}
+.noHover:hover{background:none}
+/* ---------- "Where you'll sleep" cards ---------- */
+.sl{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sl .ph{height:300px;border-radius:12px;cursor:default}.sl .ph:hover img{transform:none}
+/* ---------- Amenities preview grid + outline button ---------- */
+.am{display:grid;grid-auto-flow:column;grid-template-rows:repeat(5,auto);gap:16px 40px}
+.ai{display:flex;gap:16px;align-items:center;font-size:18px}.ai i{width:26px;text-align:center;font-size:25px}
+.ai.no{text-decoration:line-through;color:#b0b0b0}
+.bo{border:1px solid #000;border-radius:8px;padding:13px 23px;font-weight:600;margin-top:32px}.bo:hover{background:#f7f7f7}
+/* ---------- Generic modal (used by the "all amenities" dialog) ---------- */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;display:grid;place-items:center;animation:fi .2s}
+@keyframes fi{from{opacity:0}}
+.md{background:#fff;border-radius:16px;width:min(780px,92vw);max-height:80vh;overflow:auto;padding:0 32px 32px;animation:up .25s}
+@keyframes up{from{transform:translateY(24px);opacity:0}}
+.md h3{font-size:18px;font-weight:600;margin:32px 0 16px;padding-top:24px;border-top:1px solid var(--l)}.md h3:first-of-type{border:0}
+.mh{position:sticky;top:0;background:#fff;padding:20px 0;margin:0 -8px}.mh button{width:32px;height:32px;border-radius:50%}.mh button:hover{background:#f2f2f2}
+.md .ai{margin-bottom:16px}
+/* ---------- Two-month date-range calendar ---------- */
+.cal{display:flex;gap:56px;position:relative;user-select:none}.cm{flex:1}
+.nv{position:absolute;top:0;width:32px;height:32px;border-radius:50%}.nv:hover{background:#f2f2f2}
+.cm h4{text-align:center;margin:0 0 20px;font-size:18px;font-weight:600}
+.gd{display:grid;grid-template-columns:repeat(7,1fr)}
+.wd{text-align:center;font-size:14px;color:var(--g);padding-bottom:8px}
+.dy{height:48px;display:grid;place-items:center;font-size:16px;font-weight:500;cursor:pointer}
+.dy span{width:48px;height:48px;border-radius:50%;display:grid;place-items:center}
+.dy:hover span{border:1px solid #000}
+/* day states: .p past, .in inside range, .st start, .en end, .rg has a range */
+.dy.p{color:#c8c8c8;text-decoration:line-through;cursor:default}.dy.p:hover span{border:0}
+.dy.in{background:#f0f0f0}.dy.in:hover span{border:0}
+.dy.st span,.dy.en span{background:#000;color:#fff}
+.dy.st.rg{background:linear-gradient(90deg,#fff 50%,#f0f0f0 50%)}.dy.en.rg{background:linear-gradient(90deg,#f0f0f0 50%,#fff 50%)}
+/* ---------- Full-screen photo tour (gallery) & lightbox ---------- */
+.gal{position:fixed;inset:0;background:#fff;z-index:40;overflow:auto;animation:fi .25s}
+.gh{position:sticky;top:0;background:#fff;z-index:2;height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 32px}
+.ib{width:40px;height:40px;border-radius:50%}.ib:hover{background:#f2f2f2}
+.gb{max-width:1200px;margin:0 auto;padding:16px 40px 80px}
+.tg{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+.tg .ph{aspect-ratio:1/1;border-radius:10px}.cap{font-size:16px;font-weight:600;margin:8px 0 0}
+.gsp{margin-top:56px}.gsp .ph{border-radius:12px;aspect-ratio:16/9}
+.g4{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.g4 .ph{aspect-ratio:4/3}
+.lb{position:fixed;inset:0;background:#000;z-index:60;display:flex;flex-direction:column;animation:fi .2s;color:#fff}
+.lb .gh{background:#000;color:#fff}.lb .ib:hover{background:#222}
+.st2{flex:1;display:grid;place-items:center;overflow:hidden;position:relative}
+.st2 img{max-width:calc(100% - 200px);max-height:calc(100vh - 170px);border-radius:6px;animation:sr .35s}
+.st2 img.r{animation-name:sl2}
+/* slide-in animations: sr = next photo (from right), sl2 = previous photo (from left) */
+@keyframes sr{from{opacity:0;transform:translateX(40px)}}@keyframes sl2{from{opacity:0;transform:translateX(-40px)}}
+.ar{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;border:1px solid #666;background:#111}
+.ar:hover{background:#333}.ar:disabled{opacity:.3;cursor:default}
+.lc{text-align:center;padding:12px 0 24px;font-size:16px}
+/* ---------- "Guest favourite" ratings block ---------- */
+.gf{border-bottom:0}
+.gftop{display:flex;align-items:center;justify-content:center;gap:10px;padding:8px 0 8px}
+.gfnum{font-size:81px;font-weight:600;line-height:1;text-align:center}
+.gfh2{font-size:25px;font-weight:600;margin:14px 0 10px;text-align:center}
+.gfd{color:var(--g);text-align:center;max-width:360px;margin:0 auto;font-size:17px}
+.gflink{display:block;text-align:center;margin-top:16px;font-size:17px}
+.gfrow{display:flex;margin-top:64px}
+.gfcol{flex:1;text-align:center;position:relative;padding:0 12px}
+.gfcol:not(:last-child)::after{content:'';position:absolute;right:0;top:2px;bottom:2px;width:1px;background:var(--l)}
+.gfcol h5{font-size:17px;font-weight:600;margin:0 0 16px}
+.gfcol .val{font-size:17px;margin-bottom:14px}
+.gfcol>i{font-size:25px}
+.bar-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--g);margin-bottom:6px}
+.bar-row span{width:8px}
+.bar-track{flex:1;height:4px;background:var(--l);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;background:#000;border-radius:2px}
+.gfpills{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:64px}
+.gfpill{display:flex;align-items:center;gap:8px;border:1px solid #ddd;border-radius:24px;padding:10px 18px 10px 14px;font-size:16px}
+.gfpill b{font-weight:600}
+@media (max-width:1000px){.gfrow{overflow-x:auto}.gfcol{min-width:110px}}
+/* ---------- Review cards grid ---------- */
+.rg{display:grid;grid-template-columns:1fr 1fr;column-gap:64px;row-gap:40px;margin-top:8px}
+.rh{display:flex;gap:12px;align-items:center;margin-bottom:14px}
+.rav{width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.rav.ini{display:grid;place-items:center;font-weight:700;font-size:20px}
+.rname{font-weight:600;font-size:17px}
+.rsub{color:var(--g);font-size:15px}
+.rmeta{display:flex;align-items:center;gap:6px;font-size:15px;margin-bottom:12px}
+.stars{display:flex;gap:2px}
+.stars i{font-size:10px}
+.rtext{font-size:17px;line-height:1.5;margin:0}
+.rmore{display:block;margin-top:4px;font-size:17px}
+/* Respect users who prefer reduced motion: disable all animations/transitions */
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ---------- Where you'll be (CSS-drawn placeholder map) ---------- */
+.mp{position:relative;height:480px;border-radius:14px;overflow:hidden;margin-top:24px;
+ background:
+  linear-gradient(115deg,transparent 46%,#fff 46%,#fff 48%,transparent 48%),
+  linear-gradient(20deg,transparent 60%,#fff 60%,#fff 62%,transparent 62%),
+  linear-gradient(180deg,transparent 30%,#fff 30%,#fff 31.5%,transparent 31.5%),
+  linear-gradient(90deg,#e3edf3 0,#e3edf3 18%,#eaf0e2 18%,#eaf0e2 55%,#f1ede4 55%)}
+.mp .pin{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(255,127,107,.25);display:grid;place-items:center}
+.mp .pin i{width:32px;height:32px;border-radius:50%;background:var(--pc);color:#fff;display:grid;place-items:center;font-size:16px}
+.mp .ms{position:absolute;left:16px;top:16px;width:44px;height:44px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25);display:grid;place-items:center}
+.mp .zm{position:absolute;right:16px;bottom:16px;display:flex;flex-direction:column;gap:8px}
+.mp .zm button{width:40px;height:40px;border-radius:8px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.25);display:grid;place-items:center;font-size:16px}
+.mp .zm button:hover{background:#f7f7f7}
+.sh{font-size:18px;font-weight:600;margin:0 0 8px}
+.more{display:inline-flex;align-items:center;gap:6px;font-weight:600;text-decoration:underline;padding:12px 0 0;font-size:18px}
+.more i{font-size:12px}
+
+
+/* ---------- Meet your host ---------- */
+.hw{display:grid;grid-template-columns:25% 1fr;gap:80px;align-items:start}
+.hcard{display:grid;grid-template-columns:7fr 3fr;border-radius:24px;box-shadow:0 6px 20px rgba(0,0,0,.15);padding:24px 0}
+.hcl{text-align:center;padding:0 12px;border-right:1px solid var(--l)}
+.hpic{position:relative;width:96px;height:96px;margin:0 auto 12px}
+.hpic img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.hpic .vb{position:absolute;right:-2px;bottom:-2px;width:28px;height:28px;border-radius:50%;background:var(--pc);color:#fff;border:2px solid #fff;display:grid;place-items:center;font-size:14px}
+.hname{font-size:41px;font-weight:700;line-height:1.1;overflow-wrap:anywhere}
+.hrole{font-size:16px;color:var(--g);margin-top:4px}
+.hcr{display:flex;flex-direction:column;justify-content:center;gap:12px;padding:0 10px}
+.hcr div+div{border-top:1px solid var(--l);padding-top:12px}
+.hcr b{display:block;font-size:20px;font-weight:700;line-height:1.1}
+.hcr span{font-size:11px;font-weight:600}
+.hinfo{margin-top:32px;display:flex;flex-direction:column;gap:16px;font-size:18px}
+.hinfo div{display:flex;gap:16px;align-items:center}.hinfo i{width:24px;text-align:center;font-size:23px}
+.cg{display:grid;grid-template-columns:repeat(3,1fr);gap:24px 16px;margin:16px 0 40px}
+.cg div{display:flex;align-items:center;gap:12px;font-size:17px}
+.cg img{width:48px;height:48px;border-radius:50%;object-fit:cover}
+.hd2{font-size:18px;font-weight:600;margin:0 0 12px}
+.hdl{font-size:17px;line-height:1.7}
+.msg{margin-top:24px;background:#ebebeb;border-radius:8px;padding:14px 24px;font-weight:600}
+.msg:hover{background:#e0e0e0}
+.disc{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;color:var(--g);margin-top:48px;text-align:center}
+@media (max-width:900px){.hw{grid-template-columns:1fr;gap:40px}.mp{height:340px}}
+
+
+/* ---------- Things to know ---------- */
+.tk{display:grid;grid-template-columns:repeat(3,1fr);gap:48px}
+.tk>div>i{font-size:32px;display:block;margin-bottom:16px}
+.tk h3{font-size:18px;font-weight:600;margin:0 0 16px}
+.tk p{margin:0 0 8px;font-size:18px}
+.tk a{display:inline-block;margin-top:16px;font-size:18px;font-weight:700;color:#000;text-decoration:underline}
+@media (max-width:800px){.tk{grid-template-columns:1fr}}
+
+
+/* ---------- More stays nearby (scroll-snap carousel) ---------- */
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}.ch h2{margin:0}
+.cc{display:flex;align-items:center;gap:12px;font-size:16px}
+.cc .ib{border:1px solid #ddd;width:32px;height:32px}.cc .ib:disabled{opacity:.3;cursor:default}
+.ct{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.ct::-webkit-scrollbar{display:none}
+.ci2{flex:0 0 calc((100% - 64px)/5);scroll-snap-align:start;min-width:0}
+.ci2 img{width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:14px;display:block;background:#eee}
+.ci2 .nm{font-size:17px;font-weight:600;margin-top:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci2 .pr{font-size:16px;display:flex;gap:8px;align-items:center;margin-top:2px}
+.ci2 .pr i{font-size:12px}
+@media (max-width:800px){.ci2{flex-basis:calc((100% - 32px)/3)}}
+/* Leave room for the fixed 80px sticky nav when jumping to a section anchor */
+#photos,
+#amenities,
+#reviews,
+#location {
+  scroll-margin-top: 96px;
+}
+/* ---------- "You won't be charged yet" toast shown after clicking Reserve ---------- */
+.reserve-toast{
+  position:fixed;
+  left:50%;
+  bottom:32px;
+  transform:translateX(-50%) translateY(20px);
+  background:#000;
+  color:#fff;
+  padding:18px 20px;
+  border-radius:10px;
+  font-size:16px;
+  font-weight: bold;
+  z-index:9999;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+}
+.reserve-toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+</style></head>
+<body><div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" nonce="NDEzNTYwMzU2MiwyMzcxNzQyMDQ4"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" nonce="NDEzNTYwMzU2MiwyMzcxNzQyMDQ4"></script>
+<script nonce="NDEzNTYwMzU2MiwyMzcxNzQyMDQ4">
+/* =========================================================================
+   1. HELPERS
+   h  = React.createElement (JSX-free authoring)
+   S  = useState, E = useEffect, R = useRef
+   ld / sv = safe localStorage read / write (silently ignore storage errors)
+   I  = Font Awesome icon: I('solid star') -> <i class="fa-solid fa-star">
+   SVG = base wrapper for the hand-drawn inline SVG icons below
+   ========================================================================= */
+const h=React.createElement,{useState:S,useEffect:E,useRef:R}=React;
+const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const I=(c,p)=>h('i',{className:c.split(' ').map(w=>'fa-'+w).join(' '),'aria-hidden':true,...p});
+const SVG=(children,p)=>h('svg',{width:24,height:24,viewBox:'0 0 24 24',fill:'none',stroke:'currentColor',strokeWidth:1.5,strokeLinecap:'round',strokeLinejoin:'round','aria-hidden':true,style:{flexShrink:0},...p},children);
+
+/* =========================================================================
+   2. INLINE SVG ICON COMPONENTS
+   Small stroke icons drawn by hand so no extra icon font is needed.
+   ========================================================================= */
+const ChevronIcon=({dir='left',...p})=>SVG(h('path',{d:dir==='left'?'M15 6l-6 6 6 6':'M9 6l6 6-6 6'}),{width:18,height:18,strokeWidth:2,...p});
+const XIcon=p=>SVG([h('path',{key:1,d:'M6 6l12 12'}),h('path',{key:2,d:'M18 6L6 18'})],{width:18,height:18,strokeWidth:2,...p});
+const PlusIcon=p=>SVG([h('path',{key:1,d:'M12 5v14'}),h('path',{key:2,d:'M5 12h14'})],{width:16,height:16,strokeWidth:2,...p});
+const MinusIcon=p=>SVG(h('path',{d:'M5 12h14'}),{width:16,height:16,strokeWidth:2,...p});
+const ShareIcon=p=>SVG([h('path',{key:1,d:'M12 15V3'}),h('path',{key:2,d:'M7 8l5-5 5 5'}),h('path',{key:3,d:'M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6'})],{width:18,height:18,strokeWidth:1.4,...p});
+/* HeartIcon fills with the brand colour when `filled` (saved) is true */
+const HeartIcon=({filled,...p})=>SVG(h('path',{d:'M12 20.5s-7.5-4.6-10-9.3C.4 7.8 2.3 4.5 5.7 4c2-.3 3.9.7 6.3 3 2.4-2.3 4.3-3.3 6.3-3 3.4.5 5.3 3.8 3.7 7.2-2.5 4.7-10 9.3-10 9.3z'}),{width:18,height:18,strokeWidth:1.4,fill:filled?'var(--pc)':'none',stroke:filled?'var(--pc)':'currentColor',...p});
+const GridIcon=p=>SVG(h('g',null,[0,1,2].flatMap(r=>[0,1,2].map(c=>h('rect',{key:r+'-'+c,x:4+c*7,y:4+r*7,width:5,height:5,rx:1})))),{width:18,height:18,stroke:'none',fill:'currentColor',...p});
+/* Feature icons for the "highlights" block (outdoor / cooling / self check-in) */
+const FireVesselIcon=p=>SVG([h('path',{key:1,d:'M12 3c-1.6 2-3 3.6-3 5.7A3 3 0 0 0 12 12a3 3 0 0 0 3-3.3C15 6.6 13.6 5 12 3z'}),h('path',{key:2,d:'M7 13c0 2.8 2.2 5 5 5s5-2.2 5-5'}),h('path',{key:3,d:'M9 21h6M12 18v3'})],p);
+const FanIcon=p=>SVG(h('g',null,[0,90,180,270].map(a=>h('path',{key:a,d:'M12 12C9.5 9 9.5 4 12 2c2.5 2 2.5 7 0 10z',transform:'rotate('+a+' 12 12)'})).concat(h('circle',{key:'hub',cx:12,cy:12,r:1.4,fill:'currentColor',stroke:'none'}))),p);
+const DoorIcon=p=>SVG([h('rect',{key:1,x:5,y:3,width:14,height:18,rx:1}),h('path',{key:2,d:'M5 3l8 2v16l-8-2z',strokeLinejoin:'round'}),h('circle',{key:3,cx:10.5,cy:12,r:.6,fill:'currentColor',stroke:'none'})],p);
+/* Coloured mini-house used in the header search pill ("Anywhere") */
+const HouseIcon=p=>h('svg',{width:22,height:22,viewBox:'0 0 24 24','aria-hidden':true,...p},
+ h('circle',{cx:17,cy:10,r:4.6,fill:'#b7c7ab'}),
+ h('rect',{x:16.3,y:14,width:1.4,height:5,fill:'#9c8a6c'}),
+ h('polygon',{points:'3,10.2 3,8.6 18.5,3.4 18.5,5.6',fill:'#dedcd6',stroke:'#c3c1bb',strokeWidth:.4,strokeLinejoin:'round'}),
+ h('rect',{x:4.1,y:5.4,width:2,height:4,fill:'#d3d1cb',stroke:'#c3c1bb',strokeWidth:.4}),
+ h('rect',{x:4,y:10,width:13,height:10,fill:'#ececeb',stroke:'#c3c1bb',strokeWidth:.5}),
+ h('rect',{x:9.5,y:14.5,width:3,height:5.5,fill:'#c9c7c2'}));
+
+/* =========================================================================
+   3. STATIC DATA (stands in for a backend / API response)
+   ========================================================================= */
+/* Photos: [unsplash-id, caption]. `s` = full URL prefix, `c` = caption,
+   `n` = section name (caption minus trailing digit) used to group the gallery. */
+const U='https://images.unsplash.com/photo-';
+const P=[['1502672260266-1c1ef2d93688','Living Room 1'],['1556911220-bff31c812dba','Kitchen'],['1540518614846-7eded433c457','Bedroom 1'],['1584622650111-993a426fbf0a','Bathroom'],['1571003123894-1f0594d2b5d9','Pool 1'],['1493809842364-78817add7ffb','Living Room 2'],['1505693416388-ac5ce068fe85','Bedroom 2'],['1576013551627-0cc20b96c2a7','Pool 2'],['1560448204-e02f11c3d0e2','Bedroom 3'],['1522771739844-6a9f6d5f14af','Bedroom 4'],['1616594039964-ae9021a400a0','Bedroom 5']].map(([s,c])=>({s:U+s,c,n:c.replace(/ \d$/,'')}));
+/* src(): builds a resized/compressed Unsplash URL for a given pixel width */
+const src=(p,w)=>p.s+'?auto=format&fit=crop&q=70&w='+w;
+/* Amenities grouped by category: [category, [[icon, label, included(1/0)]]].
+   Items with 0 are rendered struck-through as "not included". */
+const AM=[['Bathroom',[['solid shower','Hot water',1],['solid soap','Shampoo',1],['solid wind','Hair dryer',0]]],
+['Bedroom and laundry',[['solid shirt','Washing machine',0],['solid bed','Bed linen',1],['solid door-closed','Wardrobe',1]]],
+['Entertainment',[['solid tv','TV',1],['solid dumbbell','Exercise equipment',0],['solid gamepad','Games console',0]]],
+['Kitchen and dining',[['solid kitchen-set','Kitchen',1],['solid utensils','Cooking basics',1],['solid mug-hot','Coffee maker',1],['regular snowflake','Refrigerator',1]]],
+['Heating and cooling',[['regular snowflake','Air conditioning',1],['solid fan','Ceiling fan',1],['solid temperature-high','Heating',0]]],
+['Internet and office',[['solid wifi','Wifi',1],['solid desktop','Dedicated workspace',1]]],
+['Outdoor',[['solid water-ladder','Pool',1],['solid umbrella-beach','Patio or balcony',1],['solid fire','BBQ grill',0]]],
+['Parking and facilities',[['solid car','Free parking on premises',1],['solid paw','Pets allowed',0],['solid elevator','Elevator',1]]],
+['Safety',[['regular bell','Smoke alarm',1],['solid kit-medical','First aid kit',1],['solid fire-extinguisher','Fire extinguisher',1],['solid smoking-ban','Smoking allowed',0]]]];
+/* ALL = flat amenity list; TOP = the 10 highlighted amenities shown on the page */
+const ALL=AM.flatMap(a=>a[1]);
+const TOP=['Kitchen','Wifi','Dedicated workspace','Pool','Pets allowed','Free parking on premises','TV','Air conditioning','Washing machine','Exercise equipment'].map(n=>ALL.find(a=>a[1]===n));
+/* Am: one amenity row. Excluded items get a visually hidden "(not included)"
+   note so screen readers announce what the strike-through shows visually. */
+const Am=({a})=>h('div',{className:'ai'+(a[2]?'':' no')},I(a[0]),h('span',null,a[1]+(a[2]?'':'')),!a[2]&&h('span',{className:'sr',style:{position:'absolute',left:-9999}},' (not included)'));
+const DESC="Plan your relaxing holiday at this bright, sea-breeze apartment a short walk from Candolim beach. The living room opens onto a private balcony, the kitchen is stocked for real cooking, and the shared pool sits just downstairs.\n\nThe apartment sleeps three, with a queen bedroom and a comfortable sofa bed. Fast wifi and a dedicated desk make it easy to work a few days while you stay.\n\nRestaurants, shacks and markets are within ten minutes on foot. Self check-in with a keypad lock means you can arrive whenever suits you.";
+/* Share button behaviour: copy the current URL to the clipboard and confirm */
+const shareIt=()=>{try{navigator.clipboard.writeText(location.href)}catch(e){}alert('Link copied')};
+
+
+/* =========================================================================
+   4. COMPONENTS
+   ========================================================================= */
+
+/* ---- Modal -------------------------------------------------------------
+   Generic dialog. Props: t = title, x = close callback.
+   Closes on Escape or a click on the dark backdrop; marked role="dialog"
+   and aria-modal for assistive technology. */
+function Modal({t,x,children}){E(()=>{const k=e=>e.key==='Escape'&&x();addEventListener('keydown',k);return()=>removeEventListener('keydown',k)},[]);
+return h('div',{className:'ov',onMouseDown:e=>e.target===e.currentTarget&&x()},h('div',{className:'md',role:'dialog','aria-modal':true,'aria-label':t},h('div',{className:'mh'},h('button',{onClick:x,'aria-label':'Close'},h(XIcon,null))),h('h2',null,t),children))}
+
+
+/* ---- Cal: two-month date-range picker ----------------------------------
+   State  r = {s: startTimestamp, e: endTimestamp} (persisted to localStorage)
+          m = month offset for the previous/next arrows
+   Ref    dr = drag anchor while the mouse button is held down
+   Interaction:
+     - click a day = set check-in; click a second day = set check-out
+       (the two are auto-ordered so start <= end)
+     - press and drag across days to select a range in one gesture
+     - past days are disabled; "Clear dates" resets the selection
+   The wrapper id is 'dates' (not 'location') so the Location tab/anchor
+   targets only the "Where you'll be" section - ids must be unique.
+   Helpers: D = ms per day, md() = normalise a Date to local midnight (ms). */
+const D=864e5,md=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
+function Cal(){
+ const [r,setR]=S(()=>ld('dates',{s:null,e:null}));const [m,setM]=S(0);const dr=R(null);
+ E(()=>{sv('dates',r)},[r]);
+ E(()=>{const u=()=>{dr.current=null};addEventListener('mouseup',u);return()=>removeEventListener('mouseup',u)},[]);
+ const now=new Date(),td=md(now);
+ /* mouse-down on a day: either completes a pending range or starts a new one */
+ const down=t=>{if(t<td)return;if(r.s&&!r.e&&t!==r.s){setR({s:Math.min(r.s,t),e:Math.max(r.s,t)});return}dr.current=t;setR({s:t,e:null})};
+ /* mouse-enter while dragging: live-update the range from the anchor day */
+ const enter=t=>{const a=dr.current;if(a&&t>=td&&t!==a)setR({s:Math.min(a,t),e:Math.max(a,t)})};
+ /* month(o): renders one month grid; o = 0 (left) or 1 (right) relative to offset m */
+ const month=o=>{const f=new Date(now.getFullYear(),now.getMonth()+m+o,1),n=new Date(f.getFullYear(),f.getMonth()+1,0).getDate();
+  return h('div',{className:'cm',key:o},h('h4',null,f.toLocaleString('en',{month:'long',year:'numeric'})),
+  h('div',{className:'gd',role:'grid'},...'SMTWTFS'.split('').map((d,i)=>h('div',{className:'wd',key:'w'+i},d)),
+  ...Array(f.getDay()).fill(0).map((_,i)=>h('div',{key:'b'+i})),
+  ...Array.from({length:n},(_,i)=>{const t=new Date(f.getFullYear(),f.getMonth(),i+1).getTime();
+   const st=t===r.s,en=t===r.e,ins=r.s&&r.e&&t>r.s&&t<r.e,rg=r.s&&r.e&&r.s!==r.e;
+   const c='dy'+(t<td?' p':'')+(ins?' in':'')+(st?' st':'')+(en?' en':'')+((st||en)&&rg?' rg':'');
+   return h('div',{key:t,className:c,role:'gridcell','aria-selected':st||en||!!ins,'aria-label':new Date(t).toDateString(),onMouseDown:e=>{e.preventDefault();down(t)},onMouseEnter:()=>enter(t)},h('span',null,i+1))})))};
+ /* nights = number of nights selected; f() formats a timestamp as "5 Oct" */
+ const nights=r.s&&r.e?Math.round((r.e-r.s)/D):0,f=t=>new Date(t).toLocaleDateString('en',{day:'numeric',month:'short'});
+ return h('div',{id:'dates',className:'sec',style:{borderBottom:0}},
+  h('h2',{style:{marginBottom:4}},nights?nights+' night'+(nights>1?'s':'')+' in Candolim':'Select check-in date'),
+  h('p',{className:'gr',style:{margin:'0 0 24px',fontSize:16}},nights?f(r.s)+' – '+f(r.e):'Click a date, or drag across dates to add your stay'),
+  h('div',{className:'cal'},h('button',{className:'nv',style:{left:0},onClick:()=>m>0&&setM(m-1),'aria-label':'Previous month',disabled:m===0,'aria-disabled':m===0},h(ChevronIcon,{dir:'left'})),
+  month(0),month(1),h('button',{className:'nv',style:{right:0},onClick:()=>setM(m+1),'aria-label':'Next month'},h(ChevronIcon,{dir:'right'}))),
+  h('div',{style:{textAlign:'right',marginTop:12}},h('button',{className:'ul',onClick:()=>setR({s:null,e:null})},'Clear dates')));
+}
+
+
+/* ---- Laurel: decorative laurel-wreath SVG for "Guest favourite" ---------
+   `flip` mirrors it for the right-hand side; `size` scales it.
+   LEAVES holds the ellipse geometry for each leaf along the branch. */
+const LEAVES=[{cx:16,cy:96,rx:8,ry:3.6,rot:-20},{cx:10,cy:80,rx:8.5,ry:3.8,rot:-32},{cx:6,cy:63,rx:9,ry:4,rot:-44},{cx:5,cy:46,rx:9,ry:4,rot:-56},{cx:7,cy:30,rx:8.5,ry:3.8,rot:-66},{cx:13,cy:16,rx:7.5,ry:3.4,rot:-76},{cx:22,cy:6,rx:6,ry:2.8,rot:-85}];
+function Laurel({flip,size=1}){
+ return h('svg',{width:64*size,height:112*size,viewBox:'0 0 64 112','aria-hidden':true},
+  h('g',{transform:flip?'translate(64,0) scale(-1,1)':undefined},
+   h('path',{d:'M34,108 C18,106 12,116 20,122 C26,126 32,120 29,114',fill:'none',stroke:'#000',strokeWidth:2.4,strokeLinecap:'round'}),
+   h('path',{d:'M32,108 Q16,60 14,10',stroke:'#000',strokeWidth:1.6,fill:'none'}),
+   LEAVES.map((l,i)=>h('ellipse',{key:i,cx:l.cx,cy:l.cy,rx:l.rx,ry:l.ry,fill:'none',stroke:'#000',strokeWidth:1.3,transform:'rotate('+l.rot+' '+l.cx+' '+l.cy+')'}))));
+}
+
+
+/* ---- GuestFav: rating summary block -------------------------------------
+   cats  = per-category scores [label, score, icon]
+   dist  = star distribution [stars, % of reviews] -> drives the bar chart
+   pills = review-topic chips [emoji, label, mention count] */
+function GuestFav(){
+ const cats=[['Cleanliness','5.0','solid spray-can-sparkles'],['Accuracy','5.0','regular circle-check'],['Check-in','5.0','solid key'],['Communication','5.0','regular comment'],['Location','4.8','solid map'],['Value','4.8','solid tag']];
+ const dist=[[5,92],[4,6],[3,1],[2,1],[1,0]];
+ const pills=[['🛋️','Comfort',6],['✅','Accuracy',5],['🛁','Hot tub',5],['🔧','Condition',4],['🎁','Hospitality',8],['✨','Cleanliness',4],['🛍️','Amenities',2]];
+ return h('section',{className:'sec gf'},
+  h('div',{className:'gftop'},h(Laurel,{flip:false}),
+   h('div',null,h('div',{className:'gfnum'},'4.95'),h('h2',{className:'gfh2'},'Guest favourite'),
+    h('p',{className:'gfd'},'This home is a guest favourite based on ratings, reviews and reliability.'),
+    h('a',{href:'#',className:'ul gflink'},'How reviews work')),
+   h(Laurel,{flip:true})),
+  h('div',{className:'gfrow'},
+   h('div',{className:'gfcol'},h('h5',null,'Overall rating'),
+    dist.map(([n,p])=>h('div',{className:'bar-row',key:n},h('span',null,n),h('div',{className:'bar-track'},h('div',{className:'bar-fill',style:{width:p+'%'}}))))),
+   cats.map(([t,v,ic])=>h('div',{className:'gfcol',key:t},h('h5',null,t),h('div',{className:'val'},v),I(ic)))),
+  h('div',{className:'gfpills'},pills.map(([e,n,c])=>h('div',{className:'gfpill',key:n},h('span',null,e),h('span',null,n),h('b',null,c)))));
+}
+
+
+/* ---- Reviews -------------------------------------------------------------
+   REVIEWS: sample review data. A review has either `photo` (avatar URL) or
+   initials (`ini`, `bg`, `fg`); `long: true` enables the Show more/less toggle. */
+const REVIEWS=[
+ {name:'Amit',sub:'2 months on Airbnb',when:'1 week ago',ini:'A',bg:'#e8c9a0',fg:'#8a6a3d',text:'Very helpful and responsive team. Safe and peaceful stay. loved everything about the property.'},
+ {name:'Aheesh',sub:'3 years on Airbnb',when:'2 weeks ago',photo:'https://i.pravatar.cc/88?img=52',long:true,text:'We had a wonderful stay. The apartment was clean, comfortable, and exactly as shown in the photos. The host was very responsive and helpful throughout our stay. We would definitely recommend this place and would love to stay here again.'},
+ {name:'Samiksha',sub:'8 months on Airbnb',when:'May 2026',photo:'https://i.pravatar.cc/88?img=32',text:'the host nitish was really great help'},
+ {name:'Vedant',sub:'4 years on Airbnb',when:'May 2026',ini:'V',bg:'#dcd0f0',fg:'#6b4fa0',long:true,text:'We had an amazing stay at this property in Goa! The entire home was spotless and exceptionally well-maintained, making us feel comfortable from the moment we arrived. The cleanliness standards were truly impressive, with every corner of the house looking fresh and pristine.'},
+ {name:'Vaibhav S',sub:'3 years on Airbnb',when:'May 2026',photo:'https://i.pravatar.cc/88?img=45',text:"Great great experience living out there , can't expect more , will always look for it in the future and will recommend my friends too."},
+ {name:'Mohd',sub:'5 years on Airbnb',when:'May 2026',photo:'https://i.pravatar.cc/88?img=48',text:'Great place. Exactly as described in the listing.'}
+];
+/* ReviewCard: one review with avatar, star row and expandable text */
+function ReviewCard({r}){
+ const [more,setMore]=S(false);
+ return h('div',null,
+  h('div',{className:'rh'},r.photo?h('img',{className:'rav',src:r.photo,alt:r.name}):h('div',{className:'rav ini',style:{background:r.bg,color:r.fg}},r.ini),
+   h('div',null,h('div',{className:'rname'},r.name),h('div',{className:'rsub'},r.sub))),
+  h('div',{className:'rmeta'},h('span',{className:'stars'},Array.from({length:5},(_,i)=>h('i',{key:i,className:'fa-solid fa-star'}))),h('span',{className:'gr'},'· '+r.when)),
+  h('p',{className:'rtext'},r.text,r.long&&!more&&'…'),
+  r.long&&h('button',{className:'ul rmore',onClick:()=>setMore(!more)},more?'Show less':'Show more'));
+}
+/* ReviewsGrid: two-column grid of ReviewCards + "show all" button */
+function ReviewsGrid(){
+ return h('section',{id:'reviews',className:'sec',style:{borderBottom:0}},
+  h('div',{className:'rg'},REVIEWS.map(r=>h(ReviewCard,{r,key:r.name}))),
+  h('button',{className:'bo'},'Show all 19 reviews'));
+}
+
+
+/* ---- Icons: Share + Save (heart) button pair -----------------------------
+   Reused in the photo tour and lightbox headers. `saved`/`tog` come from <App>. */
+function Icons({saved,tog}){return h('div',null,h('button',{className:'ib',onClick:shareIt,'aria-label':'Share'},h(ShareIcon,null)),h('button',{className:'ib',onClick:tog,'aria-label':saved?'Remove from saved':'Save','aria-pressed':saved},h(HeartIcon,{filled:saved})))}
+
+
+/* ---- Lightbox: full-screen single-photo viewer ---------------------------
+   Props: i = current index, go = set index, x = close.
+   Keyboard: Left/Right arrows change photo, Escape closes (capture phase +
+   stopPropagation so Escape closes only the lightbox, not the gallery behind).
+   `dir` picks the slide-in animation direction (sr = next, sl2 = previous). */
+function Lightbox({i,go,x,saved,tog}){
+ const [dir,setDir]=S(0);
+ const mv=d=>{const n=i+d;if(n<0||n>=P.length)return;setDir(d);go(n)};
+ E(()=>{const k=e=>{if(e.key==='ArrowRight')mv(1);else if(e.key==='ArrowLeft')mv(-1);else if(e.key==='Escape'){e.stopPropagation();x()}};addEventListener('keydown',k,true);return()=>removeEventListener('keydown',k,true)});
+ return h('div',{className:'lb',role:'dialog','aria-modal':true,'aria-label':'Photo viewer'},
+  h('div',{className:'gh'},h('button',{className:'ib',onClick:x,'aria-label':'Close photo viewer'},h(ChevronIcon,{dir:'left'})),h('span',{style:{fontSize:16}},(i+1)+' / '+P.length),h(Icons,{saved,tog})),
+  h('div',{className:'st2'},h('button',{className:'ar',style:{left:32},disabled:i===0,onClick:()=>mv(-1),'aria-label':'Previous photo'},h(ChevronIcon,{dir:'left'})),
+   h('img',{key:i,className:dir<0?'r':'',src:src(P[i],1600),alt:P[i].c}),
+   h('button',{className:'ar',style:{right:32},disabled:i===P.length-1,onClick:()=>mv(1),'aria-label':'Next photo'},h(ChevronIcon,{dir:'right'}))),
+  h('div',{className:'lc'},P[i].c));
+}
+
+
+/* ---- Gallery: "Photo tour" overlay ---------------------------------------
+   Top: a 4-column thumbnail grid of the first 9 photos with captions.
+   Below: photos grouped by room (Living Room, Bedroom, Pool...), each group
+   showing a hero image plus up to four smaller ones.
+   Clicking any photo opens the Lightbox at that photo's index (open(ix(p))). */
+function Gallery({x,open,saved,tog}){
+ E(()=>{const k=e=>e.key==='Escape'&&x();addEventListener('keydown',k);return()=>removeEventListener('keydown',k)},[]);
+ const sp=[...new Set(P.map(p=>p.n))];const ix=p=>P.indexOf(p);
+ const Ph=(p,w)=>h('button',{className:'ph',key:p.c,onClick:()=>open(ix(p)),'aria-label':'Open '+p.c},h('img',{src:src(p,w),alt:p.c,loading:'lazy'}));
+ return h('div',{className:'gal',role:'dialog','aria-modal':true,'aria-label':'Photo tour'},
+  h('div',{className:'gh'},h('button',{className:'ib',onClick:x,'aria-label':'Close gallery'},h(ChevronIcon,{dir:'left'})),h(Icons,{saved,tog})),
+  h('div',{className:'gb'},h('h2',null,'Photo tour'),
+   h('div',{className:'tg'},P.slice(0,9).map(p=>h('div',{key:p.c},Ph(p,600),h('p',{className:'cap'},p.c)))),
+   sp.map(n=>{const ps=P.filter(p=>p.n===n);return h('div',{className:'gsp',key:n},h('h2',{style:{fontSize:20,marginBottom:12}},n),Ph(ps[0],1400),
+    ps.length>1&&h('div',{className:'g4'},ps.slice(1,5).map(p=>Ph(p,800))))})));
+}
+
+
+/* ---- Where: "Where you'll be" location section ---------------------------
+   The map is a CSS-only placeholder (see .mp) with a pin and zoom buttons;
+   exact address is intentionally hidden ("provided after booking"). */
+const Where=()=>h('section',{id:'location',className:'sec'},
+ h('h2',{style:{marginBottom:4}},"Where you'll be"),
+ h('div',{className:'gr sub'},'Candolim, Goa, India'),
+ h('div',{className:'mp','aria-label':'Map placeholder'},
+  h('button',{className:'ms','aria-label':'Search map'},I('solid magnifying-glass')),
+  h('div',{className:'pin'},h('i',null,I('solid house'))),
+  h('div',{className:'zm'},h('button',{'aria-label':'Zoom in'},h(PlusIcon,null)),h('button',{'aria-label':'Zoom out'},h(MinusIcon,null)))),
+ h('p',{className:'gr',style:{fontSize:16,margin:'16px 0 0'}},'Exact location will be provided after booking'),
+ h('h3',{className:'sh',style:{marginTop:32}},'Neighbourhood highlights'),
+ h('div',{className:'desc',style:{maxHeight:48}},'Located in the heart of North Goa, Candolim is a lively coastal village known for its quieter beach, seafood shacks, cafés and nightlife, all within a short walk or scooter ride.'),
+ h('button',{className:'more'},'Show more',h(ChevronIcon,{dir:'right'})));
+
+
+/* ---- Host: "Meet your host" section --------------------------------------
+   COH = co-host first names (avatars come from pravatar by index). */
+const COH=['Rohan','Priya','Karan','Ananya','Sameer','Diya','Vikram','Neha'];
+const Host=()=>h('section',{className:'sec'},
+ h('h2',null,'Meet your host'),
+ h('div',{className:'hw'},
+  h('div',null,
+   h('div',{className:'hcard'},
+    h('div',{className:'hcl'},h('div',{className:'hpic'},h('img',{src:'https://i.pravatar.cc/192?img=47',alt:'Host Meera'}),h('span',{className:'vb'},I('solid check'))),
+     h('div',{className:'hname'},'Meera'),h('div',{className:'hrole'},'Host')),
+    h('div',{className:'hcr'},[['1,463','Reviews'],['4.68★','Rating'],['2','Years hosting']].map(([v,l])=>h('div',{key:l},h('b',null,v),h('span',null,l))))),
+   h('div',{className:'hinfo'},h('div',null,I('solid cake-candles'),'Born in the 80s'),h('div',null,I('solid graduation-cap'),'Where I went to school: NICMAR GOA'))),
+  h('div',null,
+   h('h3',{className:'hd2'},'Co-Hosts'),
+   h('div',{className:'cg'},COH.map((n,i)=>h('div',{key:n},h('img',{src:'https://i.pravatar.cc/96?img='+(11+i),alt:n}),n))),
+   h('h3',{className:'hd2'},'Host details'),
+   h('div',{className:'hdl'},h('div',null,'Response rate: 100%'),h('div',null,'Responds within an hour')),
+   h('button',{className:'msg'},'Message host'))),
+ h('div',{className:'disc'},I('solid shield-halved'),'To help protect your payment, always use Airbnb to send money and communicate with hosts'));
+
+
+/* ---- Know: "Things to know" (cancellation, house rules, safety) ----------
+   KNOW rows: [icon, heading, [lines]] */
+const KNOW=[['regular calendar-xmark','Cancellation policy',['Free cancellation for 48 hours.','Cancel before check-in on the 5th for a partial refund.']],
+ ['solid key','House rules',['Check-in after 2:00 pm','Checkout before 11:00 am','3 guests maximum']],
+ ['solid shield-halved','Safety & property',['Carbon monoxide alarm not reported','Smoke alarm installed','Nearby lake, river or other body of water']]];
+const Know=()=>h('section',{className:'sec'},h('h2',null,'Things to know'),
+ h('div',{className:'tk'},KNOW.map(([ic,t,ps])=>h('div',{key:t},I(ic),h('h3',null,t),ps.map(p=>h('p',{key:p},p)),h('a',{href:'#'},'Learn more')))));
+
+
+/* ---- Nearby: "More stays nearby" carousel --------------------------------
+   NEAR = 15 generated cards (photos recycled, prices/ratings derived from
+   the index so output is deterministic). Five cards per "page"; the arrow
+   buttons scroll one page at a time and the counter follows scroll position. */
+const NEAR=Array.from({length:15},(_,i)=>({p:P[i%P.length],n:['Beautiful Studio with a view to die for','Sunny Loft near Baga','Palm-fringed Villa','Cosy Poolside Retreat','Modern Flat by the Sea'][i%5],pr:'₹'+(4200+((i*3700)%20000)).toLocaleString('en-IN'),r:(4.6+((i*7)%40)/100).toFixed(2)}));
+function Nearby(){
+ const t=R(null),[pg,setPg]=S(1),tot=Math.ceil(NEAR.length/5);
+ const step=()=>t.current.clientWidth+16;
+ const upd=()=>setPg(Math.min(tot,Math.round(t.current.scrollLeft/step())+1));
+ const go=d=>{const n=Math.min(tot,Math.max(1,pg+d));t.current.scrollTo({left:(n-1)*step(),behavior:'smooth'})};
+ return h('section',{className:'sec',style:{borderBottom:0}},
+  h('div',{className:'ch'},h('h2',null,'More stays nearby'),
+   h('div',{className:'cc'},h('span',null,pg+' / '+tot),
+    h('button',{className:'ib',onClick:()=>go(-1),disabled:pg===1,'aria-label':'Previous page'},h(ChevronIcon,{dir:'left'})),
+    h('button',{className:'ib',onClick:()=>go(1),disabled:pg===tot,'aria-label':'Next page'},h(ChevronIcon,{dir:'right'})))),
+  h('div',{className:'ct',ref:t,onScroll:upd},NEAR.map((x,i)=>h('div',{className:'ci2',key:i},
+   h('img',{src:src(x.p,500),alt:x.n,loading:'lazy'}),h('div',{className:'nm'},x.n),
+   h('div',{className:'pr'},h('span',null,x.pr),h('span',null,I('regular star'),' '+x.r))))));
+}
+
+
+/* =========================================================================
+   5. APP (root component) - composes the whole page and owns shared state
+   State:
+     gal / lb  : photo-tour overlay open? / lightbox photo index (null = closed)
+     am        : "all amenities" modal open?
+     more      : description expanded?
+     stk       : show sticky tab bar instead of the header?
+     tab       : currently highlighted section tab (scroll-spy)
+     toast     : "You won't be charged yet" toast visible?
+     saved     : heart/save state (persisted to localStorage)
+   Refs: hero = photo collage (used to decide when the sticky bar appears),
+         dh = description element (used to measure expanded height).
+   ========================================================================= */
+function App(){
+ const [gal,setGal]=S(false),[lb,setLb]=S(null),[am,setAm]=S(false),[more,setMore]=S(false),[stk,setStk]=S(false),[tab,setTab]=S('photos'),[toast,setToast]=S(false);
+ const [saved,setSaved]=S(()=>ld('saved',false));const hero=R(null),dh=R(null);
+ E(()=>{sv('saved',saved)},[saved]);
+ /* Lock background scrolling while any overlay is open */
+ E(()=>{document.body.style.overflow=gal||lb!==null||am?'hidden':''},[gal,lb,am]);
+ /* Scroll-spy: show the sticky bar once the hero photos scroll under the
+    80px header, and highlight the last section whose top has passed y=140 */
+ E(()=>{const f=()=>{setStk(hero.current.getBoundingClientRect().bottom<80);let a='photos';['amenities','reviews','location'].forEach(id=>{const e=document.getElementById(id);if(e&&e.getBoundingClientRect().top<140)a=id});setTab(a)};f();addEventListener('scroll',f);return()=>removeEventListener('scroll',f)},[]);
+ const tog=()=>setSaved(s=>!s);
+ const shown=[['photos','Photos'],['amenities','Amenities'],['reviews','Reviews'],['location','Location']];
+ return h('div',null,
+  /* Sticky nav (after scrolling) OR the normal header (at top of page) */
+  stk?h('nav',{className:'stk','aria-label':'Page sections'},h('div',{className:'w'},
+   h('div',{className:'tabs'},shown.map(([id,t])=>h('a',{key:id,href:'#'+id,className:tab===id?'on':''},t))),
+   h('div',{className:'sm'},h('span',null,h('b',null,'₹4,200'),' night'),h('span',null,I('regular star',{style:{fontSize:14}}),' 4.87 · ',h('u',null,'132 reviews')),h('button',{className:'rb',onClick:()=>{
+    /* Reserve: flash the toast for 3 seconds */
+    setToast(true);
+    setTimeout(()=>setToast(false),3000);
+  }},'Reserve')))):
+  h('header',{className:'hd'},h('a',{href:'#',className:'logo','aria-label':'Home'},h('svg',{width:32,height:32,viewBox:'0 0 32 32'},h('path',{d:'M16 3c-2 0-3 1.5-4 3.5L5 21c-1.5 3.500.5 7 4 7 2.500 0 5-2 7-4.500 2 2.500 4.500 4.500 7 4.500 3.500 0 5.500-3.500 4-7L20 6.500C19 4.500 18 3 16 3zm0 9c2 3 4 6 4 9 0 2-1.500 3.500-4 3.500S12 23 12 21c0-3 2-6 4-9z',fill:'#ff7f6b'})),'stayly'),
+   h('div',{className:'pill'},h('span',null,h(HouseIcon,null),'Anywhere'),h('span',null,'Anytime'),h('span',null,'Add guests'),h('div',{className:'sb'},I('solid magnifying-glass'))),
+   h('div',{className:'rt'},h('a',{href:'#'},'Become a host'),h('span',{className:'ci'},I('solid globe')),h('span',{className:'ci'},I('solid bars')))),
+  h('main',{className:'w'},
+   /* Title row with Share / Save actions */
+   h('div',{className:'top'},h('h1',null,'Sea-view balcony flat, 5 min to Candolim beach'),
+    h('div',null,h('button',{className:'ul',onClick:shareIt},h(ShareIcon,{style:{marginRight:6,verticalAlign:'-4px'}}),'Share'),h('button',{className:'ul',onClick:tog,'aria-pressed':saved},h(HeartIcon,{filled:saved,style:{marginRight:6,verticalAlign:'-4px'}}),saved?'Saved':'Save'))),
+   /* Hero photo collage: 1 large + 4 small; any tile opens the photo tour */
+   h('div',{id:'photos',ref:hero,className:'col'},
+    h('div',{className:'m'},h('button',{className:'ph',onClick:()=>setGal(true),'aria-label':'Open photo tour'},h('img',{src:src(P[0],1000),alt:P[0].c}))),
+    h('div',{className:'q'},P.slice(1,5).map(p=>h('button',{key:p.c,className:'ph',onClick:()=>setGal(true),'aria-label':'Open photo tour: '+p.c},h('img',{src:src(p,600),alt:p.c})))),
+    h('button',{className:'sa',onClick:()=>setGal(true)},h(GridIcon,null),'Show all photos')),
+   /* Listing summary + rating strip */
+   h('section',{className:'sec'},h('h2',{style:{marginBottom:4}},'Entire serviced apartment in Candolim, India'),h('div',{className:'gr sub'},'3 guests · 1 bedroom · 2 beds · 1 bathroom'),
+    h('div',{className:'rv'},h('div',{className:'fv'},h(Laurel,{flip:false,size:.3}),'Guest favourite',h(Laurel,{flip:true,size:.3})),h('div',null,h('b',null,'4.87'),h('div',{style:{color:'#000',fontSize:12}},'★★★★★')),h('div',null,h('b',null,'132'),h('div',{className:'gr',style:{fontSize:14}},'Reviews')))),
+   /* Host summary line */
+   h('section',{className:'sec'},h('div',{className:'hs'},h('img',{className:'av',src:'https://i.pravatar.cc/96?img=47',alt:'Host Meera'}),h('div',null,h('b',{style:{fontWeight:600}},'Hosted by Meera'),h('div',{className:'gr',style:{fontSize:16}},'2 years hosting')))),
+   /* Three highlight features (icon, title, description) */
+   h('section',{className:'sec'},[[FireVesselIcon,'Outdoor entertainment','Private balcony and shared pool to unwind after the beach.'],[FanIcon,'Designed for staying cool','Beat the heat with A/C and ceiling fan.'],[DoorIcon,'Self check-in','Check yourself in with the keypad.']].map(([Ic,t,d])=>h('div',{className:'ft',key:t},h(Ic,{width:26,height:26,style:{flexShrink:0,marginTop:4}}),h('div',null,h('b',null,t),h('span',{className:'gr',style:{fontSize:16}},d))))),
+   /* Description: collapsed to 96px with a fade; expands by animating
+      max-height to the element's measured scrollHeight */
+   h('section',{className:'sec'},
+    h('div',{className:'xlate'},h('span',null,'Some information has been automatically translated'),h('button',{className:'xlink'},'Show more')),
+    h('div',{className:'desc',ref:dh,style:{maxHeight:more?(dh.current?dh.current.scrollHeight:600):96}},DESC,!more&&h('div',{className:'fade','aria-hidden':true})),
+    h('button',{className:'ul noHover',style:{padding:'12px 0 0',fontSize:18},onClick:()=>setMore(!more),'aria-expanded':more},more?'Show less':'Show more')),
+   /* Sleeping arrangements */
+   h('section',{className:'sec'},h('h2',null,"Where you'll sleep"),h('div',{className:'sl'},[[2,'Bedroom 1','1 queen bed'],[5,'Living room','1 sofa bed']].map(([i,t,d])=>h('div',{key:t},h('div',{className:'ph'},h('img',{src:src(P[i],800),alt:t})),h('b',{style:{fontWeight:600,display:'block',marginTop:12}},t),h('span',{className:'gr',style:{fontSize:16}},d))))),
+   /* Amenities preview (top 10) + button that opens the full modal */
+   h('section',{id:'amenities',className:'sec'},h('h2',null,'What this place offers'),h('div',{className:'am'},TOP.map(a=>h(Am,{a,key:a[1]}))),h('button',{className:'bo',onClick:()=>setAm(true)},'Show all '+ALL.length+' amenities')),
+   /* Remaining page sections, in on-page order */
+   h(Cal),
+   h(GuestFav),
+   h(ReviewsGrid),h(Where),h(Host),h(Know),h(Nearby)),
+  h('footer',{style:{padding:'40px',color:'var(--g)',fontSize:16,textAlign:'center'}},'Demo page — not affiliated with any booking service.'),
+/* "Reserve" confirmation toast (visibility toggled by the `toast` state) */
+h('div',{
+  className:`reserve-toast ${toast?'show':''}`
+},"You won't be charged yet"),
+  /* Overlays - rendered only while open. Lightbox sits above the gallery. */
+  am&&h(Modal,{t:"What this place offers",x:()=>setAm(false)},AM.map(([c,its])=>h('div',{key:c},h('h3',null,c),its.map(a=>h(Am,{a,key:a[1]}))))),
+  gal&&h(Gallery,{x:()=>setGal(false),open:setLb,saved,tog}),
+  lb!==null&&h(Lightbox,{i:lb,go:setLb,x:()=>setLb(null),saved,tog}));
+}
+/* Mount the app into <div id="root"> */
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script></body></html>
